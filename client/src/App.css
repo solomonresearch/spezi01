@@ -862,3 +862,247 @@ body {
     display: none;
   }
 }
+
+/* ==================== Case Display Styles ==================== */
+
+/* Subcategory wrapper and expansion */
+.subcategory-wrapper {
+  list-style: none;
+}
+
+.subcategory-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.subcategory-item:hover {
+  background-color: #f0f4f8;
+  color: #667eea;
+}
+
+.subcategory-item.active {
+  background-color: #e8eef5;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.expand-icon-small {
+  font-size: 10px;
+  margin-left: 5px;
+  color: #999;
+}
+
+/* Case list */
+.case-list {
+  list-style: none;
+  padding-left: 15px;
+  margin-top: 5px;
+}
+
+.case-item-loading,
+.case-item-empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+.case-item-btn {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #666;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.case-item-btn:hover {
+  background-color: #f8fafc;
+  border-left-color: #667eea;
+  color: #333;
+}
+
+.case-item-btn.active {
+  background-color: #eef2ff;
+  border-left-color: #667eea;
+  color: #667eea;
+  font-weight: 500;
+}
+
+.case-difficulty {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.case-title-short {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* No case selected state */
+.no-case-selected {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.no-case-selected h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #667eea;
+}
+
+.no-case-selected p {
+  font-size: 16px;
+  color: #777;
+}
+
+/* Loading message */
+.loading-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Case header with title and badges */
+.case-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.case-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.case-level-badge.ușor {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.case-level-badge.mediu {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.case-level-badge.dificil {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.case-week {
+  font-size: 13px;
+  color: #777;
+  font-weight: 500;
+}
+
+/* Case sections */
+.case-section {
+  margin-bottom: 24px;
+}
+
+.case-section h3 {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.legal-problem {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+  padding: 12px;
+  background-color: #f8fafc;
+  border-left: 3px solid #667eea;
+  border-radius: 4px;
+}
+
+.article-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.article-tag {
+  display: inline-block;
+  padding: 6px 12px;
+  background-color: #e8eef5;
+  color: #667eea;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid #d1dce8;
+}
+
+.case-description,
+.case-question {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.case-question {
+  font-weight: 500;
+  font-style: italic;
+  padding: 12px;
+  background-color: #fffbf0;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+}
+
+/* Analysis steps */
+.analysis-steps {
+  list-style: decimal;
+  padding-left: 24px;
+  margin: 0;
+}
+
+.analysis-step {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+/* Hints */
+.hints-list {
+  list-style: disc;
+  padding-left: 24px;
+  margin: 0;
+}
+
+.hint-item {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #666;
+  margin-bottom: 6px;
+}

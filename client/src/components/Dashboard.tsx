@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useCases, useCase } from '../hooks/useCases';
+import { Case } from '../types/case';
 
 const lawCategories = [
   {
@@ -28,11 +30,17 @@ export const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
+  const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoana fizică (Capacitatea de exercițiu)');
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
+
+  // Load cases from Supabase
+  const { cases, loading: casesLoading } = useCases();
+  const { caseData, articles, steps, hints, loading: caseLoading } = useCase(selectedCaseId);
 
   const codeTypes = [
     { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
@@ -81,8 +89,25 @@ export const Dashboard = () => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
+  const toggleSubcategory = (subcategory: string) => {
+    setExpandedSubcategory(expandedSubcategory === subcategory ? null : subcategory);
+  };
+
+  const handleCaseClick = (caseItem: Case) => {
+    setSelectedCaseId(caseItem.id);
+    setShowHints(false); // Reset hints when switching cases
+  };
+
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const getDifficultyBadge = (level: string) => {
+    const normalizedLevel = level.toLowerCase();
+    if (normalizedLevel === 'ușor') return '🟢';
+    if (normalizedLevel === 'mediu') return '🟡';
+    if (normalizedLevel === 'dificil') return '🔴';
+    return '';
   };
 
   const handleCodeTypeClick = (codeType: 'civil' | 'constitution' | 'criminal') => {
@@ -140,8 +165,40 @@ export const Dashboard = () => {
               {expandedCategory === category.id && category.subcategories.length > 0 && (
                 <ul className="subcategory-list">
                   {category.subcategories.map((sub, idx) => (
-                    <li key={idx} className="subcategory-item">
-                      {sub}
+                    <li key={idx} className="subcategory-wrapper">
+                      <button
+                        className={`subcategory-item ${expandedSubcategory === sub ? 'active' : ''}`}
+                        onClick={() => toggleSubcategory(sub)}
+                      >
+                        {sub}
+                        {sub === 'Persoana fizică (Capacitatea de exercițiu)' && cases.length > 0 && (
+                          <span className="expand-icon-small">
+                            {expandedSubcategory === sub ? '▼' : '▶'}
+                          </span>
+                        )}
+                      </button>
+                      {/* Show cases under "Capacitatea de exercițiu" */}
+                      {expandedSubcategory === sub && sub === 'Persoana fizică (Capacitatea de exercițiu)' && (
+                        <ul className="case-list">
+                          {casesLoading ? (
+                            <li className="case-item-loading">Se încarcă cazurile...</li>
+                          ) : cases.length === 0 ? (
+                            <li className="case-item-empty">Nu există cazuri</li>
+                          ) : (
+                            cases.map((caseItem) => (
+                              <li key={caseItem.id}>
+                                <button
+                                  className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''}`}
+                                  onClick={() => handleCaseClick(caseItem)}
+                                >
+                                  <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
+                                  <span className="case-title-short">{caseItem.title}</span>
+                                </button>
+                              </li>
+                            ))
+                          )}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -160,56 +217,94 @@ export const Dashboard = () => {
 
         {/* Main Content */}
         <main className="main-content">
-          <div className="case-display">
-            <div className="case-header">
-              <h2 className="case-title">Capacitatea de folosință a persoanei fizice</h2>
-              <span className="case-id">ID: {currentCaseId}</span>
+          {caseLoading ? (
+            <div className="case-display">
+              <p className="loading-message">Se încarcă cazul...</p>
             </div>
-
-            <div className="case-content">
-              <h3>Cazul</h3>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maria, în vârstă de 25 de ani,
-                a încheiat un contract de vânzare-cumpărare pentru un apartament. La scurt timp după
-                semnarea contractului, s-a ridicat problema capacității sale juridice de a încheia acest act.
-              </p>
-              <p>
-                Proin sed libero enim sed faucibus turpis. Se pune întrebarea dacă Maria avea capacitate
-                deplină de exercițiu la momentul încheierii contractului și care sunt consecințele juridice
-                ale acestui act.
-              </p>
+          ) : !caseData ? (
+            <div className="case-display">
+              <div className="no-case-selected">
+                <h2>📚 Selectează un caz</h2>
+                <p>Alege un caz din bara laterală pentru a începe studiul.</p>
+              </div>
             </div>
+          ) : (
+            <div className="case-display">
+              <div className="case-header">
+                <div className="case-title-section">
+                  <h2 className="case-title">{caseData.title}</h2>
+                  <span className={`case-level-badge ${caseData.level.toLowerCase()}`}>
+                    {getDifficultyBadge(caseData.level)} {caseData.level}
+                  </span>
+                </div>
+                <span className="case-week">Săptămâna {caseData.week_number}</span>
+              </div>
 
-            <div className="case-questions">
-              <h3>Întrebări</h3>
-              <ol>
-                <li>Care este diferența între capacitatea de folosință și capacitatea de exercițiu?</li>
-                <li>La ce vârstă se dobândește capacitatea deplină de exercițiu conform Codului Civil român?</li>
-                <li>Care sunt consecințele juridice ale unui contract încheiat de o persoană lipsită de capacitate de exercițiu?</li>
-                <li>Ce rol joacă tutorele sau curatorul în protejarea drepturilor persoanelor lipsite de capacitate?</li>
-              </ol>
-            </div>
+              <div className="case-section">
+                <h3>🎯 Problema juridică</h3>
+                <p className="legal-problem">{caseData.legal_problem}</p>
+              </div>
 
-            <div className="case-hints">
-              <button
-                className="btn-toggle-hints"
-                onClick={() => setShowHints(!showHints)}
-              >
-                {showHints ? 'Ascunde Indicii' : 'Arată Indicii'} 💡
-              </button>
-              {showHints && (
-                <div className="hints-content">
-                  <h4>Indicii:</h4>
-                  <ul>
-                    <li>Consultați Art. 34-41 din Codul Civil privind capacitatea de folosință</li>
-                    <li>Analizați Art. 38 referitor la capacitatea de exercițiu</li>
-                    <li>Studiați cazurile de incapacitate relativă și absolută</li>
-                    <li>Verificați dispozițiile privind nulitatea actelor juridice</li>
-                  </ul>
+              {articles.length > 0 && (
+                <div className="case-section">
+                  <h3>📖 Articole relevante</h3>
+                  <div className="article-tags">
+                    {articles.map((article) => (
+                      <span key={article.id} className="article-tag">
+                        {article.article_reference}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="case-section">
+                <h3>📝 Speta (Cazul)</h3>
+                <p className="case-description">{caseData.case_description}</p>
+              </div>
+
+              <div className="case-section">
+                <h3>❓ Întrebare</h3>
+                <p className="case-question">{caseData.question}</p>
+              </div>
+
+              {steps.length > 0 && (
+                <div className="case-section">
+                  <h3>🔍 Pași de analiză așteptați</h3>
+                  <ol className="analysis-steps">
+                    {steps.map((step) => (
+                      <li key={step.id} className="analysis-step">
+                        {step.step_description}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+
+              {hints.length > 0 && (
+                <div className="case-section">
+                  <button
+                    className="btn-toggle-hints"
+                    onClick={() => setShowHints(!showHints)}
+                  >
+                    {showHints ? 'Ascunde Indicii' : 'Arată Indicii'} 💡
+                  </button>
+                  {showHints && (
+                    <div className="hints-content">
+                      <h4>Indicii:</h4>
+                      <ul className="hints-list">
+                        {hints.map((hint) => (
+                          <li key={hint.id} className="hint-item">
+                            {hint.hint_text}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          </div>
+          )}
         </main>
 
         {/* Right Sidebar - Code + Chat */}
