@@ -1,7 +1,7 @@
 // Service for fetching legal cases from Supabase
 
 import { supabase } from '../lib/supabase';
-import { Case, CaseArticle, CaseAnalysisStep, CaseHint, CasesGrouped } from '../types/case';
+import type { Case, CaseArticle, CaseAnalysisStep, CaseHint, CasesGrouped } from '../types/case';
 
 export class CaseService {
   /**

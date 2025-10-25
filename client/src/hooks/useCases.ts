@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CaseService } from '../services/caseService';
-import { Case, CaseArticle, CaseAnalysisStep, CaseHint } from '../types/case';
+import type { Case, CaseArticle, CaseAnalysisStep, CaseHint } from '../types/case';
 
 export const useCases = () => {
   const [cases, setCases] = useState<Case[]>([]);

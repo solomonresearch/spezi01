@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useCases, useCase } from '../hooks/useCases';
-import { Case } from '../types/case';
+import type { Case } from '../types/case';
 
 const lawCategories = [
   {
@@ -118,15 +118,6 @@ export const Dashboard = () => {
       setSelectedCodeType(codeType);
     }
   };
-
-  // Generate Case ID: CIV-25-ART-3 (Category-Year-Code-Difficulty)
-  // No leading zeros - year is shown as single digit if < 10
-  const generateCaseId = (categoryCode: string, year: number, codeType: string, difficulty: number) => {
-    const yearShort = parseInt(year.toString().slice(-2));
-    return `${categoryCode}-${yearShort}-${codeType}-${difficulty}`;
-  };
-
-  const currentCaseId = generateCaseId('CIV', 2025, 'ART', 3);
 
   return (
     <div className="app-container">
