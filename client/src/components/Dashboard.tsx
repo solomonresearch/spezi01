@@ -367,20 +367,15 @@ export const Dashboard = () => {
                 <>
                   {articles.map((article) => (
                     <div key={article.id} className="article-item">
-                      <div className="article-header">
-                        <strong className="article-number">Articolul {article.article_number}</strong>
-                        {article.book && (
-                          <span className="article-book" title={article.book}>
-                            {article.book}
-                          </span>
-                        )}
-                      </div>
+                      <strong className="article-number">Articolul {article.article_number}</strong>
                       {article.article_title && (
-                        <h4 className="article-title">{article.article_title}</h4>
+                        <>
+                          {' '}
+                          <strong className="article-title">{article.article_title}</strong>
+                        </>
                       )}
-                      <div className="article-text">
-                        {article.article_text}
-                      </div>
+                      {' '}
+                      <span className="article-text">{article.article_text}</span>
                       {article.annotations && (
                         <div className="article-notes">
                           <em>{article.annotations}</em>
