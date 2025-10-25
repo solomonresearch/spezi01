@@ -37,11 +37,26 @@ CREATE TABLE legal_domains (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Table: code_types
+-- Defines available legal codes (Civil Code, Constitution, Criminal Code, etc.)
+CREATE TABLE code_types (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    code_id VARCHAR(50) UNIQUE NOT NULL,
+    code_name_ro VARCHAR(100) NOT NULL,
+    code_name_en VARCHAR(100) NOT NULL,
+    icon VARCHAR(50),
+    description TEXT,
+    sort_order INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Table: code_articles
--- Stores legal code articles (Civil Code, Criminal Code, etc.)
+-- Stores legal code articles (Civil Code, Criminal Code, Constitution, etc.)
 CREATE TABLE code_articles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    code_type VARCHAR(50) NOT NULL,
+    code_type VARCHAR(50) NOT NULL REFERENCES code_types(code_id) ON DELETE CASCADE,
     legal_branch VARCHAR(50),
     book_number INTEGER,
     title_number INTEGER,
@@ -58,9 +73,11 @@ CREATE TABLE code_articles (
     UNIQUE(code_type, article_number) WHERE is_current = true
 );
 
--- Create index for article search
+-- Create indexes for article search
 CREATE INDEX idx_code_articles_number ON code_articles(article_number);
+CREATE INDEX idx_code_articles_type ON code_articles(code_type);
 CREATE INDEX idx_code_articles_keywords ON code_articles USING GIN(keywords);
+CREATE INDEX idx_code_articles_fulltext ON code_articles USING GIN(to_tsvector('romanian', article_text));
 
 -- Table: users (extends Supabase auth.users)
 -- Note: This is for additional user profile data. Auth is handled by Supabase Auth
@@ -197,6 +214,9 @@ CREATE TRIGGER update_legal_branches_updated_at BEFORE UPDATE ON legal_branches
 CREATE TRIGGER update_legal_domains_updated_at BEFORE UPDATE ON legal_domains
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+CREATE TRIGGER update_code_types_updated_at BEFORE UPDATE ON code_types
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
 CREATE TRIGGER update_code_articles_updated_at BEFORE UPDATE ON code_articles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -259,6 +279,12 @@ CREATE POLICY "Users can update own progress"
     ON user_case_progress FOR UPDATE
     USING (auth.uid() = user_id);
 
+-- Insert seed data for code types
+INSERT INTO code_types (code_id, code_name_ro, code_name_en, icon, description, sort_order) VALUES
+    ('civil_code', 'Codul Civil', 'Civil Code', '⚖️', 'Codul civil român reglementează raporturile patrimoniale și nepatrimoniale dintre persoane', 1),
+    ('constitution', 'Constituția României', 'Romanian Constitution', '🏛️', 'Legea fundamentală a statului român', 2),
+    ('criminal_code', 'Codul Penal', 'Criminal Code', '👮', 'Codul penal român reglementează infracțiunile și pedepsele', 3);
+
 -- Insert seed data for legal branches
 INSERT INTO legal_branches (branch_code, branch_name_ro, branch_name_en, description, primary_code, icon, color, sort_order) VALUES
     ('CIV', 'Drept Civil', 'Civil Law', 'Dreptul civil reglementează raporturile patrimoniale și nepatrimoniale dintre persoane fizice și juridice', 'civil_code', '⚖️', '#667eea', 1),
@@ -281,6 +307,7 @@ INSERT INTO legal_domains (domain_code, domain_name_ro, domain_name_en, legal_br
 -- Comments for documentation
 COMMENT ON TABLE legal_branches IS 'Main branches of law (Civil, Criminal, Constitutional, etc.)';
 COMMENT ON TABLE legal_domains IS 'Sub-domains within legal branches';
+COMMENT ON TABLE code_types IS 'Available legal codes (Civil Code, Constitution, Criminal Code, etc.)';
 COMMENT ON TABLE code_articles IS 'Legal code articles from various Romanian codes';
 COMMENT ON TABLE user_profiles IS 'Extended user profile information beyond Supabase Auth';
 COMMENT ON TABLE cases IS 'Legal case studies for educational purposes';

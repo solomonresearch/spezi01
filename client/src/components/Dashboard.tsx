@@ -31,6 +31,14 @@ export const Dashboard = () => {
   const [showHints, setShowHints] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [articleSearch, setArticleSearch] = useState('');
+  const [searchType, setSearchType] = useState<'article' | 'keyword'>('article');
+  const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
+
+  const codeTypes = [
+    { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
+    { id: 'constitution', name: 'Constituția României', icon: '🏛️' },
+    { id: 'criminal', name: 'Codul Penal', icon: '👮' }
+  ];
 
   const handleSignOut = async () => {
     await signOut();
@@ -46,8 +54,9 @@ export const Dashboard = () => {
   };
 
   // Generate Case ID: CIV-25-ART-3 (Category-Year-Code-Difficulty)
+  // No leading zeros - year is shown as single digit if < 10
   const generateCaseId = (categoryCode: string, year: number, codeType: string, difficulty: number) => {
-    const yearShort = year.toString().slice(-2);
+    const yearShort = parseInt(year.toString().slice(-2));
     return `${categoryCode}-${yearShort}-${codeType}-${difficulty}`;
   };
 
@@ -164,21 +173,69 @@ export const Dashboard = () => {
 
         {/* Right Sidebar - Code + Chat */}
         <aside className="right-sidebar">
-          {/* Civil Code Search */}
+          {/* Legal Code Search */}
           <div className="code-search-container">
-            <h3 className="code-search-title">Codul Civil</h3>
+            {/* Code Type Dropdown */}
+            <div className="code-type-selector">
+              {codeTypes.map((code) => (
+                <button
+                  key={code.id}
+                  className={`code-type-btn ${selectedCodeType === code.id ? 'active' : ''}`}
+                  onClick={() => setSelectedCodeType(code.id as any)}
+                >
+                  <span className="code-icon">{code.icon}</span>
+                  <span className="code-name">{code.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Search Type Toggle */}
+            <div className="search-type-toggle">
+              <button
+                className={`toggle-btn ${searchType === 'article' ? 'active' : ''}`}
+                onClick={() => setSearchType('article')}
+              >
+                Articol
+              </button>
+              <button
+                className={`toggle-btn ${searchType === 'keyword' ? 'active' : ''}`}
+                onClick={() => setSearchType('keyword')}
+              >
+                Cuvânt cheie
+              </button>
+            </div>
+
+            {/* Search Input */}
             <div className="code-search-input-wrapper">
               <input
                 type="text"
                 className="code-search-input"
-                placeholder="Caută articol (ex: Art. 38)..."
+                placeholder={searchType === 'article' ? 'Ex: Art. 38' : 'Ex: capacitate juridică'}
                 value={articleSearch}
                 onChange={(e) => setArticleSearch(e.target.value)}
               />
               <button className="btn-search">🔍</button>
             </div>
+
+            {/* Search Results */}
             <div className="code-search-results">
-              <p className="search-placeholder">Introduceți numărul articolului pentru căutare</p>
+              {!articleSearch ? (
+                <p className="search-placeholder">
+                  {searchType === 'article'
+                    ? 'Introduceți numărul articolului'
+                    : 'Introduceți un cuvânt cheie'}
+                </p>
+              ) : (
+                <div className="search-result-item">
+                  <div className="result-header">
+                    <strong>Art. 38</strong>
+                    <span className="result-code">Codul Civil</span>
+                  </div>
+                  <p className="result-text">
+                    Capacitatea deplină de exercițiu se dobândește la împlinirea vârstei de 18 ani...
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
