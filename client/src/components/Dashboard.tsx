@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 
 interface Article {
   id: string;
@@ -44,7 +43,6 @@ export const Dashboard = () => {
   const [showHints, setShowHints] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [articleSearch, setArticleSearch] = useState('');
-  const [searchType, setSearchType] = useState<'article' | 'keyword'>('article');
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
