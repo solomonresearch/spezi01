@@ -12,7 +12,6 @@ VALUES (
     'Ușor',
     1,
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Capacitatea de folosință a copilului conceput și dreptul acestuia de a moșteni.',
     'Maria este însărcinată în luna a șasea când soțul ei, Ion, decedează într-un accident de mașină. Ion lasă o moștenire constând într-un apartament și economii de 100.000 lei. La câteva luni după deces, Maria naște un băiețel sănătos, pe nume Andrei. Fratele lui Ion, Pavel, contestă dreptul copilului Andrei de a moșteni, susținând că acesta nu era născut la momentul deschiderii succesiunii și prin urmare nu are capacitate de folosință.',
     'Are copilul Andrei dreptul de a moșteni de la tatăl său decedat?'
@@ -46,7 +45,6 @@ VALUES (
     'Caz 2: Donația către copilul nenăscut',
     'Ușor',
     1,
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Validitatea unei donații făcute în favoarea unui copil conceput dar nenăscut încă.',
     'Bunicul Gheorghe dorește să facă o donație de 50.000 lei fiicei sale Maria, care este însărcinată în luna a cincea, specificând în actul de donație că banii sunt destinați copilului nenăscut. Maria acceptă donația în numele copilului. După trei luni, Maria naște o fetiță sănătoasă, Elena. Un văr al Mariei, Cristian, contestă donația, afirmând că la momentul donației copilul nu avea capacitate de folosință și prin urmare donația este nulă.',
@@ -82,7 +80,6 @@ VALUES (
     'Ușor',
     1,
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Dreptul copilului conceput de a primi despăgubiri pentru decesul tatălui în accident.',
     'Ana este însărcinată în luna a patra când soțul ei, Mihai, este ucis într-un accident de muncă. Compania angajatoare oferă despăgubiri soției și copiilor defunctului. Ana solicită despăgubiri și pentru copilul pe care îl poartă în pântece. Compania refuză, argumentând că despăgubirile se acordă doar copiilor deja născuți la data accidentului. După patru luni, Ana naște un băiat sănătos, Radu.',
     'Are dreptul copilul Radu la despăgubiri pentru decesul tatălui său?'
@@ -117,7 +114,6 @@ VALUES (
     'Ușor',
     1,
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Cerința nașterii vii pentru dobândirea retroactivă a capacității de folosință.',
     'Sofia este însărcinată când bunica ei, Ileana, decedează, lăsându-i o moștenire de 80.000 lei. În testament, Ileana specifică că lasă o parte din moștenire și copilului nenăscut al Sofiei. Din păcate, la naștere, copilul este mort-născut. Părinții Sofiei cer ca partea din moștenire destinată copilului să revină Sofiei, în calitate de mamă. Celeilalte moștenitori contestă, susținând că Sofia nu are niciun drept asupra acestei părți.',
     'Cui revine partea din moștenire destinată copilului mort-născut?'
@@ -150,7 +146,6 @@ VALUES (
     'Caz 5: Capacitatea de folosință de la naștere',
     'Ușor',
     1,
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Dobândirea capacității de folosință de la naștere pentru un copil născut viu.',
     'Gabriela a născut un băiețel sănătos, Vlad, pe data de 15 martie 2024. La câteva zile după naștere, bunicul dorește să facă o donație de 30.000 lei copilului. Un consultant juridic îi spune bunicului că trebuie să aștepte până când copilul împlinește 1 an pentru ca donația să fie valabilă, deoarece până atunci copilul nu are capacitate de folosință. Bunicul este confuz și cere clarificări.',
@@ -188,7 +183,6 @@ VALUES (
     'Caz 6: Declararea judecătorească a morții după dispariție',
     'Mediu',
     2,
-    'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
     'Condiții pentru declararea judecătorească a morții și efectele acesteia asupra drepturilor succesorale.',
     'Victor a plecat în 2010 într-o expediție în Amazon și nu a mai fost văzut sau auzit de atunci. Soția sa, Elena, a făcut demersuri de căutare dar fără rezultat. În 2024, după 14 ani de la dispariție, Elena solicită instanței declararea judecătorească a morții lui Victor pentru a putea rezolva situația juridică a bunurilor comune și a se recăsători. Fratele lui Victor se opune, susținând că nu s-au scurs suficienți ani și că există șansa ca Victor să fie în viață undeva în junglă.',
