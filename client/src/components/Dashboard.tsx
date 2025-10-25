@@ -1,6 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
+interface Article {
+  id: string;
+  article_number: string;
+  article_title: string | null;
+  article_text: string;
+  book: string | null;
+  title: string | null;
+  chapter: string | null;
+  section: string | null;
+  annotations: string | null;
+}
 
 const lawCategories = [
   {
@@ -33,12 +46,186 @@ export const Dashboard = () => {
   const [articleSearch, setArticleSearch] = useState('');
   const [searchType, setSearchType] = useState<'article' | 'keyword'>('article');
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
 
   const codeTypes = [
     { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
     { id: 'constitution', name: 'Constituția României', icon: '🏛️' },
     { id: 'criminal', name: 'Codul Penal', icon: '👮' }
   ];
+
+  // Load civil code articles when code type changes
+  useEffect(() => {
+    if (selectedCodeType === 'civil') {
+      loadCivilCode();
+    } else {
+      setArticles([]);
+      setFilteredArticles([]);
+    }
+  }, [selectedCodeType]);
+
+  // Filter articles when search changes
+  useEffect(() => {
+    if (!articleSearch.trim()) {
+      setFilteredArticles(articles);
+      return;
+    }
+
+    const searchLower = articleSearch.toLowerCase().trim();
+    const filtered = articles.filter(article => {
+      const searchableText = `
+        ${article.article_number}
+        ${article.article_title || ''}
+        ${article.article_text}
+        ${article.book || ''}
+        ${article.title || ''}
+        ${article.chapter || ''}
+      `.toLowerCase();
+
+      return searchableText.includes(searchLower);
+    });
+
+    setFilteredArticles(filtered);
+  }, [articleSearch, articles]);
+
+  const parseCivilCodeFromText = (content: string): Article[] => {
+    const lines = content.split('\n');
+    const articles: Article[] = [];
+
+    let currentArticle: Partial<Article> | null = null;
+    let currentBook = '';
+    let currentTitle = '';
+    let currentChapter = '';
+    let currentSection = '';
+    let pendingAnnotation = '';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      // Detect structure hierarchy
+      if (line.match(/^CARTEA\s+/i) || line.match(/^Cartea\s+/)) {
+        currentBook = line;
+        continue;
+      }
+
+      if (line.match(/^Titlul\s+/i)) {
+        currentTitle = line;
+        continue;
+      }
+
+      if (line.match(/^Capitolul\s+/i)) {
+        currentChapter = line;
+        continue;
+      }
+
+      if (line.match(/^Secţiunea\s+/i) || line.match(/^Secțiunea\s+/i)) {
+        currentSection = line;
+        continue;
+      }
+
+      // Detect article start - must be "Articolul" followed by number
+      const articleMatch = line.match(/^Articolul\s+(\d+(?:\^\d+)?)\s*$/i);
+      if (articleMatch) {
+        // Save previous article
+        if (currentArticle) {
+          if (pendingAnnotation) {
+            currentArticle.annotations = pendingAnnotation.trim();
+            pendingAnnotation = '';
+          }
+          articles.push(currentArticle as Article);
+        }
+
+        // Start new article
+        currentArticle = {
+          id: `article-${articleMatch[1]}`,
+          article_number: articleMatch[1].replace('^', ''),
+          article_title: null,
+          article_text: '',
+          book: currentBook || null,
+          title: currentTitle || null,
+          chapter: currentChapter || null,
+          section: currentSection || null,
+          annotations: null
+        };
+        continue;
+      }
+
+      // Detect annotations
+      if (line.startsWith('Notă') || line.startsWith('Nota')) {
+        pendingAnnotation = line + '\n';
+        continue;
+      }
+
+      // If collecting annotation
+      if (pendingAnnotation && !currentArticle) {
+        pendingAnnotation += line + '\n';
+        continue;
+      }
+
+      // If in article
+      if (currentArticle) {
+        // First meaningful line after article number is the title
+        if (!currentArticle.article_title && !line.match(/^\(?(\d+|\w)\)?/) && line.length > 3) {
+          currentArticle.article_title = line;
+        } else {
+          // Everything else is article text
+          currentArticle.article_text += line + '\n';
+        }
+      }
+    }
+
+    // Don't forget last article
+    if (currentArticle) {
+      if (pendingAnnotation) {
+        currentArticle.annotations = pendingAnnotation.trim();
+      }
+      articles.push(currentArticle as Article);
+    }
+
+    return articles;
+  };
+
+  const loadCivilCode = async () => {
+    setLoading(true);
+    try {
+      // Fetch the text file from public folder
+      const response = await fetch('/codcivil.txt');
+      if (!response.ok) {
+        throw new Error('Failed to load civil code');
+      }
+
+      const content = await response.text();
+      const parsed = parseCivilCodeFromText(content);
+
+      // Sort articles numerically by article_number
+      const sorted = parsed.sort((a, b) => {
+        const numA = parseInt(a.article_number);
+        const numB = parseInt(b.article_number);
+        return numA - numB;
+      });
+
+      setArticles(sorted);
+      setFilteredArticles(sorted);
+    } catch (error) {
+      console.error('Error loading civil code:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const highlightText = (text: string, searchTerm: string) => {
+    if (!searchTerm.trim()) return text;
+
+    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
+    return parts.map((part, index) =>
+      part.toLowerCase() === searchTerm.toLowerCase()
+        ? <mark key={index} className="highlight">{part}</mark>
+        : part
+    );
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -175,66 +362,78 @@ export const Dashboard = () => {
         <aside className="right-sidebar">
           {/* Legal Code Search */}
           <div className="code-search-container">
-            {/* Code Type Dropdown */}
-            <div className="code-type-selector">
-              {codeTypes.map((code) => (
-                <button
-                  key={code.id}
-                  className={`code-type-btn ${selectedCodeType === code.id ? 'active' : ''}`}
-                  onClick={() => setSelectedCodeType(code.id as any)}
-                >
-                  <span className="code-icon">{code.icon}</span>
-                  <span className="code-name">{code.name}</span>
-                </button>
-              ))}
+            {/* Compact Code Type Selector + Search */}
+            <div className="code-header">
+              <div className="code-type-selector-compact">
+                {codeTypes.map((code) => (
+                  <button
+                    key={code.id}
+                    className={`code-type-btn-compact ${selectedCodeType === code.id ? 'active' : ''}`}
+                    onClick={() => setSelectedCodeType(code.id as any)}
+                    title={code.name}
+                  >
+                    <span className="code-icon">{code.icon}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Input */}
+              <div className="code-search-input-wrapper-compact">
+                <input
+                  type="text"
+                  className="code-search-input"
+                  placeholder="Caută în Codul Civil..."
+                  value={articleSearch}
+                  onChange={(e) => setArticleSearch(e.target.value)}
+                />
+                <span className="btn-search">🔍</span>
+              </div>
             </div>
 
-            {/* Search Type Toggle */}
-            <div className="search-type-toggle">
-              <button
-                className={`toggle-btn ${searchType === 'article' ? 'active' : ''}`}
-                onClick={() => setSearchType('article')}
-              >
-                Articol
-              </button>
-              <button
-                className={`toggle-btn ${searchType === 'keyword' ? 'active' : ''}`}
-                onClick={() => setSearchType('keyword')}
-              >
-                Cuvânt cheie
-              </button>
-            </div>
-
-            {/* Search Input */}
-            <div className="code-search-input-wrapper">
-              <input
-                type="text"
-                className="code-search-input"
-                placeholder={searchType === 'article' ? 'Ex: Art. 38' : 'Ex: capacitate juridică'}
-                value={articleSearch}
-                onChange={(e) => setArticleSearch(e.target.value)}
-              />
-              <button className="btn-search">🔍</button>
-            </div>
-
-            {/* Search Results */}
+            {/* Search Results / All Articles */}
             <div className="code-search-results">
-              {!articleSearch ? (
+              {loading ? (
+                <p className="search-placeholder">Se încarcă...</p>
+              ) : filteredArticles.length === 0 && selectedCodeType === 'civil' ? (
                 <p className="search-placeholder">
-                  {searchType === 'article'
-                    ? 'Introduceți numărul articolului'
-                    : 'Introduceți un cuvânt cheie'}
+                  {articleSearch ? 'Nu s-au găsit rezultate' : 'Nu există articole'}
                 </p>
+              ) : selectedCodeType !== 'civil' ? (
+                <p className="search-placeholder">Selectați Codul Civil pentru a vizualiza articolele</p>
               ) : (
-                <div className="search-result-item">
-                  <div className="result-header">
-                    <strong>Art. 38</strong>
-                    <span className="result-code">Codul Civil</span>
-                  </div>
-                  <p className="result-text">
-                    Capacitatea deplină de exercițiu se dobândește la împlinirea vârstei de 18 ani...
-                  </p>
-                </div>
+                <>
+                  {articleSearch && (
+                    <div className="search-info">
+                      {filteredArticles.length} {filteredArticles.length === 1 ? 'rezultat' : 'rezultate'}
+                    </div>
+                  )}
+                  {filteredArticles.map((article) => (
+                    <div key={article.id} className="search-result-item">
+                      <div className="result-header">
+                        <strong>Art. {highlightText(article.article_number, articleSearch)}</strong>
+                        {article.book && (
+                          <span className="result-code" title={article.book}>
+                            {article.book.substring(0, 20)}{article.book.length > 20 ? '...' : ''}
+                          </span>
+                        )}
+                      </div>
+                      {article.article_title && (
+                        <h4 className="article-title">{highlightText(article.article_title, articleSearch)}</h4>
+                      )}
+                      <div className="result-text">
+                        {highlightText(
+                          article.article_text.substring(0, 300) + (article.article_text.length > 300 ? '...' : ''),
+                          articleSearch
+                        )}
+                      </div>
+                      {article.annotations && (
+                        <div className="article-annotations">
+                          <strong>Notă:</strong> {article.annotations.substring(0, 100)}...
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           </div>
