@@ -2,18 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-interface Article {
-  id: string;
-  article_number: string;
-  article_title: string | null;
-  article_text: string;
-  book: string | null;
-  title: string | null;
-  chapter: string | null;
-  section: string | null;
-  annotations: string | null;
-}
-
 const lawCategories = [
   {
     id: 'civil',
@@ -43,7 +31,7 @@ export const Dashboard = () => {
   const [showHints, setShowHints] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   const codeTypes = [
@@ -57,133 +45,26 @@ export const Dashboard = () => {
     loadCivilCode();
   }, []);
 
-  // Clear articles when switching away from civil code
+  // Clear text when switching away from civil code
   useEffect(() => {
     if (selectedCodeType !== 'civil') {
-      setArticles([]);
+      setCivilCodeText('');
     }
   }, [selectedCodeType]);
-
-  const parseCivilCodeFromText = (content: string): Article[] => {
-    const lines = content.split('\n');
-    const articles: Article[] = [];
-
-    let currentArticle: Partial<Article> | null = null;
-    let currentBook = '';
-    let currentTitle = '';
-    let currentChapter = '';
-    let currentSection = '';
-    let pendingAnnotation = '';
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-
-      // Detect structure hierarchy
-      if (line.match(/^CARTEA\s+/i) || line.match(/^Cartea\s+/)) {
-        currentBook = line;
-        continue;
-      }
-
-      if (line.match(/^Titlul\s+/i)) {
-        currentTitle = line;
-        continue;
-      }
-
-      if (line.match(/^Capitolul\s+/i)) {
-        currentChapter = line;
-        continue;
-      }
-
-      if (line.match(/^Secţiunea\s+/i) || line.match(/^Secțiunea\s+/i)) {
-        currentSection = line;
-        continue;
-      }
-
-      // Detect article start - must be "Articolul" followed by number
-      const articleMatch = line.match(/^Articolul\s+(\d+(?:\^\d+)?)\s*$/i);
-      if (articleMatch) {
-        // Save previous article
-        if (currentArticle) {
-          if (pendingAnnotation) {
-            currentArticle.annotations = pendingAnnotation.trim();
-            pendingAnnotation = '';
-          }
-          articles.push(currentArticle as Article);
-        }
-
-        // Start new article
-        currentArticle = {
-          id: `article-${articleMatch[1]}`,
-          article_number: articleMatch[1].replace('^', ''),
-          article_title: null,
-          article_text: '',
-          book: currentBook || null,
-          title: currentTitle || null,
-          chapter: currentChapter || null,
-          section: currentSection || null,
-          annotations: null
-        };
-        continue;
-      }
-
-      // Detect annotations
-      if (line.startsWith('Notă') || line.startsWith('Nota')) {
-        pendingAnnotation = line + '\n';
-        continue;
-      }
-
-      // If collecting annotation
-      if (pendingAnnotation && !currentArticle) {
-        pendingAnnotation += line + '\n';
-        continue;
-      }
-
-      // If in article
-      if (currentArticle) {
-        // First meaningful line after article number is the title
-        if (!currentArticle.article_title && !line.match(/^\(?(\d+|\w)\)?/) && line.length > 3) {
-          currentArticle.article_title = line;
-        } else {
-          // Everything else is article text
-          currentArticle.article_text += line + '\n';
-        }
-      }
-    }
-
-    // Don't forget last article
-    if (currentArticle) {
-      if (pendingAnnotation) {
-        currentArticle.annotations = pendingAnnotation.trim();
-      }
-      articles.push(currentArticle as Article);
-    }
-
-    return articles;
-  };
 
   const loadCivilCode = async () => {
     if (selectedCodeType !== 'civil') return;
 
     setLoading(true);
     try {
-      // Fetch the text file from public folder
+      // Fetch the text file from public folder and display as-is
       const response = await fetch('/codcivil.txt');
       if (!response.ok) {
         throw new Error('Failed to load civil code');
       }
 
       const content = await response.text();
-      const parsed = parseCivilCodeFromText(content);
-
-      // Sort articles numerically by article_number
-      const sorted = parsed.sort((a, b) => {
-        const numA = parseInt(a.article_number);
-        const numB = parseInt(b.article_number);
-        return numA - numB;
-      });
-
-      setArticles(sorted);
+      setCivilCodeText(content);
     } catch (error) {
       console.error('Error loading civil code:', error);
     } finally {
@@ -355,8 +236,8 @@ export const Dashboard = () => {
             <div className="code-content">
               {loading ? (
                 <p className="code-placeholder">Se încarcă Codul Civil...</p>
-              ) : selectedCodeType === 'civil' && articles.length === 0 ? (
-                <p className="code-placeholder">Nu există articole</p>
+              ) : selectedCodeType === 'civil' && !civilCodeText ? (
+                <p className="code-placeholder">Nu există text</p>
               ) : selectedCodeType !== 'civil' ? (
                 <div className="coming-soon">
                   <p className="coming-soon-icon">{codeTypes.find(c => c.id === selectedCodeType)?.icon}</p>
@@ -364,26 +245,7 @@ export const Dashboard = () => {
                   <p className="coming-soon-subtitle">Acest cod nu este disponibil încă</p>
                 </div>
               ) : (
-                <>
-                  {articles.map((article) => (
-                    <div key={article.id} className="article-item">
-                      <strong className="article-number">Articolul {article.article_number}</strong>
-                      {article.article_title && (
-                        <>
-                          {' '}
-                          <strong className="article-title">{article.article_title}</strong>
-                        </>
-                      )}
-                      {' '}
-                      <span className="article-text">{article.article_text}</span>
-                      {article.annotations && (
-                        <div className="article-notes">
-                          <em>{article.annotations}</em>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </>
+                <pre className="code-text">{civilCodeText}</pre>
               )}
             </div>
           </div>

@@ -715,64 +715,19 @@ body {
   margin: 0;
 }
 
-/* Article Item - Plain text, minimal formatting */
-.article-item {
-  background: transparent;
-  border: none;
+/* Raw Code Text Display */
+.code-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #333;
+  margin: 0;
   padding: 0;
-  margin-bottom: 24px;
-}
-
-.article-item:last-child {
-  margin-bottom: 0;
-}
-
-.article-header {
-  display: inline;
-}
-
-.article-number {
-  color: #333;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.article-book {
-  display: none;
-}
-
-.article-title {
-  color: #333;
-  font-size: 14px;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.7;
-  display: inline;
-}
-
-.article-text {
-  color: #333;
-  font-size: 14px;
-  line-height: 1.7;
-  margin: 0;
   white-space: pre-wrap;
-  display: inline;
-}
-
-/* Article Notes - Displayed in Italics */
-.article-notes {
-  margin-top: 8px;
-  padding: 0;
+  word-wrap: break-word;
   background: transparent;
   border: none;
-  font-size: 14px;
-  color: #333;
-}
-
-.article-notes em {
-  font-style: italic;
-  color: #666;
-  line-height: 1.7;
 }
 
 .chat-container {
