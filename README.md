@@ -2,6 +2,8 @@
 
 A modern authentication system built with React, TypeScript, Vite, and Supabase.
 
+🌐 **Live App:** [www.spezi.space](https://www.spezi.space)
+
 ## Features
 
 - ✅ User registration with email validation
@@ -137,6 +139,12 @@ To view your Supabase dashboard:
 
 ## Deployment
 
+### Production Deployment
+
+**Live at:** [www.spezi.space](https://www.spezi.space)
+
+The app is deployed on **Vercel** with automatic deployments from the `master` branch.
+
 ### Build for production
 
 ```bash
@@ -146,14 +154,29 @@ npm run build
 
 The build output will be in `client/dist/`.
 
-### Deploy to Vercel/Netlify
+### Vercel Configuration
 
-1. Connect your GitHub repository
-2. Set build command: `cd client && npm run build`
-3. Set publish directory: `client/dist`
-4. Add environment variables in the hosting platform:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+**Important:** See `Developer/vercel-deployment-guide.md` for complete setup instructions.
+
+**Quick Setup:**
+1. Root Directory: `client`
+2. Build Command: `npm run build`
+3. Output Directory: `dist`
+4. Environment Variables:
+   - `VITE_SUPABASE_URL=https://pgprhlzpzegwfwcbsrww.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY=[your-key]`
+
+### Email Confirmation URLs
+
+To ensure email confirmations redirect to the production site:
+
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard/project/pgprhlzpzegwfwcbsrww/auth/url-configuration)
+2. Navigate to **Authentication** → **URL Configuration**
+3. Set **Site URL** to: `https://www.spezi.space`
+4. Add **Redirect URLs**: `https://www.spezi.space/**`
+5. Click **Save**
+
+See `Developer/supabase-url-configuration.md` for detailed instructions.
 
 ## Contributing
 

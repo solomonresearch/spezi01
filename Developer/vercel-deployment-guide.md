@@ -1,8 +1,16 @@
-# Vercel Deployment Guide - Fix 404 Error
+# Vercel Deployment Guide
 
-## Problem: 404 NOT_FOUND Error
+## Production Deployment
 
-The error occurs because your React app is in the `client/` subdirectory, but Vercel is trying to deploy from the root directory.
+**Live App:** [www.spezi.space](https://www.spezi.space)
+
+The app is successfully deployed on Vercel with automatic deployments from the `master` branch.
+
+---
+
+## Troubleshooting: 404 NOT_FOUND Error
+
+If you encounter a 404 error, it's because your React app is in the `client/` subdirectory, but Vercel is trying to deploy from the root directory.
 
 ## Solution: Configure Vercel Project Settings
 
