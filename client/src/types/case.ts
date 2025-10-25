@@ -5,6 +5,7 @@ export interface Case {
   title: string;
   level: 'Ușor' | 'Mediu' | 'Dificil' | 'ușor' | 'mediu' | 'dificil';
   week_number: number;
+  subcategory?: string;
   legal_problem: string;
   case_description: string;
   question: string;

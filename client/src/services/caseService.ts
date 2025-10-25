@@ -161,4 +161,23 @@ export class CaseService {
 
     return data || [];
   }
+
+  /**
+   * Fetch cases by subcategory
+   */
+  static async getCasesBySubcategory(subcategory: string): Promise<Case[]> {
+    const { data, error } = await supabase
+      .from('cases')
+      .select('*')
+      .eq('subcategory', subcategory)
+      .order('week_number', { ascending: true })
+      .order('level', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching cases by subcategory:', error);
+      return [];
+    }
+
+    return data || [];
+  }
 }

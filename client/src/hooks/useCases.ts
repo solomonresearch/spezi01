@@ -68,3 +68,33 @@ export const useCase = (caseId: string | null) => {
 
   return { caseData, articles, steps, hints, loading, error };
 };
+
+export const useCasesBySubcategory = (subcategory: string | null) => {
+  const [cases, setCases] = useState<Case[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (subcategory) {
+      loadCases(subcategory);
+    } else {
+      setCases([]);
+    }
+  }, [subcategory]);
+
+  const loadCases = async (sub: string) => {
+    try {
+      setLoading(true);
+      const data = await CaseService.getCasesBySubcategory(sub);
+      setCases(data);
+      setError(null);
+    } catch (err) {
+      setError(err as Error);
+      console.error('Failed to load cases by subcategory:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { cases, loading, error };
+};

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useCases, useCase } from '../hooks/useCases';
+import { useCasesBySubcategory, useCase } from '../hooks/useCases';
 import type { Case } from '../types/case';
 
 const lawCategories = [
@@ -38,8 +38,8 @@ export const Dashboard = () => {
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Load cases from Supabase
-  const { cases, loading: casesLoading } = useCases();
+  // Load cases from Supabase by subcategory
+  const { cases, loading: casesLoading } = useCasesBySubcategory(expandedSubcategory);
   const { caseData, articles, steps, hints, loading: caseLoading } = useCase(selectedCaseId);
 
   const codeTypes = [
@@ -162,14 +162,14 @@ export const Dashboard = () => {
                         onClick={() => toggleSubcategory(sub)}
                       >
                         {sub}
-                        {sub === 'Persoana fizică (Capacitatea de exercițiu)' && cases.length > 0 && (
+                        {expandedSubcategory === sub && cases.length > 0 && (
                           <span className="expand-icon-small">
                             {expandedSubcategory === sub ? '▼' : '▶'}
                           </span>
                         )}
                       </button>
-                      {/* Show cases under "Capacitatea de exercițiu" */}
-                      {expandedSubcategory === sub && sub === 'Persoana fizică (Capacitatea de exercițiu)' && (
+                      {/* Show cases under selected subcategory */}
+                      {expandedSubcategory === sub && (
                         <ul className="case-list">
                           {casesLoading ? (
                             <li className="case-item-loading">Se încarcă cazurile...</li>
