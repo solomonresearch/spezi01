@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 const lawCategories = [
   {
     id: 'civil',
+    code: 'CIV',
     name: 'Drept Civil',
     subcategories: [
       'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
@@ -19,8 +20,8 @@ const lawCategories = [
       'Aplicarea legii civile în timp și spațiu II'
     ]
   },
-  { id: 'constitutional', name: 'Drept Constitutional', subcategories: [] },
-  { id: 'roman', name: 'Drept Roman', subcategories: [] }
+  { id: 'constitutional', code: 'CON', name: 'Drept Constitutional', subcategories: [] },
+  { id: 'roman', code: 'ROM', name: 'Drept Roman', subcategories: [] }
 ];
 
 export const Dashboard = () => {
@@ -28,6 +29,8 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [showHints, setShowHints] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [articleSearch, setArticleSearch] = useState('');
 
   const handleSignOut = async () => {
     await signOut();
@@ -37,6 +40,18 @@ export const Dashboard = () => {
   const toggleCategory = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  // Generate Case ID: CIV-25-ART-3 (Category-Year-Code-Difficulty)
+  const generateCaseId = (categoryCode: string, year: number, codeType: string, difficulty: number) => {
+    const yearShort = year.toString().slice(-2);
+    return `${categoryCode}-${yearShort}-${codeType}-${difficulty}`;
+  };
+
+  const currentCaseId = generateCaseId('CIV', 2025, 'ART', 3);
 
   return (
     <div className="app-container">
@@ -49,10 +64,16 @@ export const Dashboard = () => {
         </div>
       </header>
 
-      <div className="app-layout">
+      <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {/* Sidebar */}
-        <aside className="sidebar">
-          <h3 className="sidebar-title">Law Categories</h3>
+        {!sidebarCollapsed && (
+          <aside className="sidebar">
+            <div className="sidebar-header">
+              <h3 className="sidebar-title">Law Categories</h3>
+              <button className="btn-toggle-sidebar" onClick={toggleSidebar} title="Hide sidebar">
+                ◀
+              </button>
+            </div>
           {lawCategories.map((category) => (
             <div key={category.id} className="category-section">
               <button
@@ -77,14 +98,22 @@ export const Dashboard = () => {
               )}
             </div>
           ))}
-        </aside>
+          </aside>
+        )}
+
+        {/* Collapsed sidebar toggle button */}
+        {sidebarCollapsed && (
+          <button className="btn-show-sidebar" onClick={toggleSidebar} title="Show sidebar">
+            ▶
+          </button>
+        )}
 
         {/* Main Content */}
         <main className="main-content">
           <div className="case-display">
             <div className="case-header">
               <h2 className="case-title">Capacitatea de folosință a persoanei fizice</h2>
-              <span className="case-id">Case ID: #CV-2025-001</span>
+              <span className="case-id">ID: {currentCaseId}</span>
             </div>
 
             <div className="case-content">
@@ -133,8 +162,27 @@ export const Dashboard = () => {
           </div>
         </main>
 
-        {/* Chat Sidebar */}
-        <aside className="chat-sidebar">
+        {/* Right Sidebar - Code + Chat */}
+        <aside className="right-sidebar">
+          {/* Civil Code Search */}
+          <div className="code-search-container">
+            <h3 className="code-search-title">Codul Civil</h3>
+            <div className="code-search-input-wrapper">
+              <input
+                type="text"
+                className="code-search-input"
+                placeholder="Caută articol (ex: Art. 38)..."
+                value={articleSearch}
+                onChange={(e) => setArticleSearch(e.target.value)}
+              />
+              <button className="btn-search">🔍</button>
+            </div>
+            <div className="code-search-results">
+              <p className="search-placeholder">Introduceți numărul articolului pentru căutare</p>
+            </div>
+          </div>
+
+          {/* AI Chat */}
           <div className="chat-container">
             <h3 className="chat-title">AI Assistant</h3>
             <div className="chat-messages">
