@@ -204,6 +204,15 @@ export const Dashboard = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
+  const handleCodeTypeClick = (codeType: 'civil' | 'constitution' | 'criminal') => {
+    if (codeType === 'civil' && selectedCodeType === 'civil') {
+      // Reload civil code if already selected
+      loadCivilCode();
+    } else {
+      setSelectedCodeType(codeType);
+    }
+  };
+
   // Generate Case ID: CIV-25-ART-3 (Category-Year-Code-Difficulty)
   // No leading zeros - year is shown as single digit if < 10
   const generateCaseId = (categoryCode: string, year: number, codeType: string, difficulty: number) => {
@@ -333,7 +342,7 @@ export const Dashboard = () => {
                   <button
                     key={code.id}
                     className={`code-type-btn-full ${selectedCodeType === code.id ? 'active' : ''}`}
-                    onClick={() => setSelectedCodeType(code.id as any)}
+                    onClick={() => handleCodeTypeClick(code.id as any)}
                   >
                     <span className="code-icon">{code.icon}</span>
                     <span className="code-name">{code.name}</span>

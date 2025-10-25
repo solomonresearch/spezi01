@@ -587,27 +587,27 @@ body {
   border-bottom: 1px solid #e1e8ed;
 }
 
-/* Full Code Type Selector - Vertical stacked buttons with text */
+/* Full Code Type Selector - Horizontal line of buttons */
 .code-type-selector-full {
   display: flex;
-  flex-direction: column;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .code-type-btn-full {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 8px 12px;
   background: white;
   border: 2px solid #e1e8ed;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 12px;
   color: #555;
   text-align: left;
-  width: 100%;
+  flex: 0 0 auto;
 }
 
 .code-type-btn-full:hover {
@@ -625,12 +625,12 @@ body {
 }
 
 .code-icon {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .code-name {
-  flex: 1;
-  font-size: 14px;
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 /* Search Type Toggle (Article/Keyword) */
