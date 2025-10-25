@@ -42,11 +42,9 @@ export const Dashboard = () => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [showHints, setShowHints] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [articleSearch, setArticleSearch] = useState('');
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
 
   const codeTypes = [
     { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
@@ -54,39 +52,17 @@ export const Dashboard = () => {
     { id: 'criminal', name: 'Codul Penal', icon: '👮' }
   ];
 
-  // Load civil code articles when code type changes
+  // Load civil code on initial mount
   useEffect(() => {
-    if (selectedCodeType === 'civil') {
-      loadCivilCode();
-    } else {
+    loadCivilCode();
+  }, []);
+
+  // Clear articles when switching away from civil code
+  useEffect(() => {
+    if (selectedCodeType !== 'civil') {
       setArticles([]);
-      setFilteredArticles([]);
     }
   }, [selectedCodeType]);
-
-  // Filter articles when search changes
-  useEffect(() => {
-    if (!articleSearch.trim()) {
-      setFilteredArticles(articles);
-      return;
-    }
-
-    const searchLower = articleSearch.toLowerCase().trim();
-    const filtered = articles.filter(article => {
-      const searchableText = `
-        ${article.article_number}
-        ${article.article_title || ''}
-        ${article.article_text}
-        ${article.book || ''}
-        ${article.title || ''}
-        ${article.chapter || ''}
-      `.toLowerCase();
-
-      return searchableText.includes(searchLower);
-    });
-
-    setFilteredArticles(filtered);
-  }, [articleSearch, articles]);
 
   const parseCivilCodeFromText = (content: string): Article[] => {
     const lines = content.split('\n');
@@ -187,6 +163,8 @@ export const Dashboard = () => {
   };
 
   const loadCivilCode = async () => {
+    if (selectedCodeType !== 'civil') return;
+
     setLoading(true);
     try {
       // Fetch the text file from public folder
@@ -206,23 +184,11 @@ export const Dashboard = () => {
       });
 
       setArticles(sorted);
-      setFilteredArticles(sorted);
     } catch (error) {
       console.error('Error loading civil code:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const highlightText = (text: string, searchTerm: string) => {
-    if (!searchTerm.trim()) return text;
-
-    const parts = text.split(new RegExp(`(${searchTerm})`, 'gi'));
-    return parts.map((part, index) =>
-      part.toLowerCase() === searchTerm.toLowerCase()
-        ? <mark key={index} className="highlight">{part}</mark>
-        : part
-    );
   };
 
   const handleSignOut = async () => {
@@ -358,75 +324,57 @@ export const Dashboard = () => {
 
         {/* Right Sidebar - Code + Chat */}
         <aside className="right-sidebar">
-          {/* Legal Code Search */}
-          <div className="code-search-container">
-            {/* Compact Code Type Selector + Search */}
+          {/* Legal Code Display */}
+          <div className="code-display-container">
+            {/* Code Type Selector */}
             <div className="code-header">
-              <div className="code-type-selector-compact">
+              <div className="code-type-selector-full">
                 {codeTypes.map((code) => (
                   <button
                     key={code.id}
-                    className={`code-type-btn-compact ${selectedCodeType === code.id ? 'active' : ''}`}
+                    className={`code-type-btn-full ${selectedCodeType === code.id ? 'active' : ''}`}
                     onClick={() => setSelectedCodeType(code.id as any)}
-                    title={code.name}
                   >
                     <span className="code-icon">{code.icon}</span>
+                    <span className="code-name">{code.name}</span>
                   </button>
                 ))}
               </div>
-
-              {/* Search Input */}
-              <div className="code-search-input-wrapper-compact">
-                <input
-                  type="text"
-                  className="code-search-input"
-                  placeholder="Caută în Codul Civil..."
-                  value={articleSearch}
-                  onChange={(e) => setArticleSearch(e.target.value)}
-                />
-                <span className="btn-search">🔍</span>
-              </div>
             </div>
 
-            {/* Search Results / All Articles */}
-            <div className="code-search-results">
+            {/* Code Content */}
+            <div className="code-content">
               {loading ? (
-                <p className="search-placeholder">Se încarcă...</p>
-              ) : filteredArticles.length === 0 && selectedCodeType === 'civil' ? (
-                <p className="search-placeholder">
-                  {articleSearch ? 'Nu s-au găsit rezultate' : 'Nu există articole'}
-                </p>
+                <p className="code-placeholder">Se încarcă Codul Civil...</p>
+              ) : selectedCodeType === 'civil' && articles.length === 0 ? (
+                <p className="code-placeholder">Nu există articole</p>
               ) : selectedCodeType !== 'civil' ? (
-                <p className="search-placeholder">Selectați Codul Civil pentru a vizualiza articolele</p>
+                <div className="coming-soon">
+                  <p className="coming-soon-icon">{codeTypes.find(c => c.id === selectedCodeType)?.icon}</p>
+                  <p className="coming-soon-text">În curând</p>
+                  <p className="coming-soon-subtitle">Acest cod nu este disponibil încă</p>
+                </div>
               ) : (
                 <>
-                  {articleSearch && (
-                    <div className="search-info">
-                      {filteredArticles.length} {filteredArticles.length === 1 ? 'rezultat' : 'rezultate'}
-                    </div>
-                  )}
-                  {filteredArticles.map((article) => (
-                    <div key={article.id} className="search-result-item">
-                      <div className="result-header">
-                        <strong>Art. {highlightText(article.article_number, articleSearch)}</strong>
+                  {articles.map((article) => (
+                    <div key={article.id} className="article-item">
+                      <div className="article-header">
+                        <strong className="article-number">Articolul {article.article_number}</strong>
                         {article.book && (
-                          <span className="result-code" title={article.book}>
-                            {article.book.substring(0, 20)}{article.book.length > 20 ? '...' : ''}
+                          <span className="article-book" title={article.book}>
+                            {article.book}
                           </span>
                         )}
                       </div>
                       {article.article_title && (
-                        <h4 className="article-title">{highlightText(article.article_title, articleSearch)}</h4>
+                        <h4 className="article-title">{article.article_title}</h4>
                       )}
-                      <div className="result-text">
-                        {highlightText(
-                          article.article_text.substring(0, 300) + (article.article_text.length > 300 ? '...' : ''),
-                          articleSearch
-                        )}
+                      <div className="article-text">
+                        {article.article_text}
                       </div>
                       {article.annotations && (
-                        <div className="article-annotations">
-                          <strong>Notă:</strong> {article.annotations.substring(0, 100)}...
+                        <div className="article-notes">
+                          <em>{article.annotations}</em>
                         </div>
                       )}
                     </div>
