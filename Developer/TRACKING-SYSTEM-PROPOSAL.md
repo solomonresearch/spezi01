@@ -12,17 +12,67 @@ This proposal outlines a comprehensive tracking system to monitor and analyze st
 
 - ✅ Assessment scores and attempts
 - ✅ Solution submissions with full text
-- ✅ AI feedback and evaluation results
-- ✅ Chat conversations with AI tutor
+- ✅ **COMPLETE AI feedback and evaluation results** (every AI response saved)
+- ✅ **Detailed score breakdowns** (all 10 rubric criteria tracked individually)
+- ✅ **ALL AI messages tracked** (chat tutor + assessment evaluator)
+- ✅ Chat conversations with AI tutor (every message logged)
 - ✅ Progress tracking and points system
 - ✅ Per-case attempt counters
 - ✅ Time-on-task analytics
+- ✅ **Unified AI interaction audit log** (all AI calls platform-wide)
 
 ---
 
-## 2. Database Schema (Supabase PostgreSQL)
+## 2. KEY FEATURE: Comprehensive AI Message Tracking
 
-### 2.1. Core Tracking Tables
+**EVERY AI INTERACTION IS TRACKED AND STORED:**
+
+### 2.1. What AI Messages Are Tracked
+
+1. **AI Tutor Chat Messages** (`chat_messages` table)
+   - Every user question sent to AI tutor
+   - Every AI response in chat conversations
+   - Model used, tokens consumed, timestamps
+
+2. **AI Detection Reviews** (logged to `ai_interactions`)
+   - Student solution text submitted
+   - AI detection prompt and system prompt
+   - AI's analysis and probability percentage
+   - Justification for detection decision
+
+3. **Full Legal Assessments** (stored in multiple tables)
+   - Complete evaluation feedback in `user_solutions.feedback_text`
+   - Detailed score breakdown in `assessment_evaluations` table:
+     * All 10 rubric criteria scores (understanding, identification, chronology, etc.)
+     * Strong points identified by AI
+     * Weak points identified by AI
+     * Improvement recommendations
+     * General commentary
+   - Full unstructured AI response preserved
+
+4. **Unified Audit Log** (`ai_interactions` table)
+   - **EVERY AI API CALL** across the platform
+   - Request prompts (user + system)
+   - Complete AI responses
+   - Model metadata (name, tokens, cost)
+   - Performance metrics (response time)
+   - Success/failure status
+
+### 2.2. Why This Matters
+
+✅ **Transparency:** Students can see exactly what AI said about their work
+✅ **Auditability:** Admin can review all AI feedback for quality control
+✅ **Analytics:** Track which rubric criteria students struggle with most
+✅ **Cost Management:** Monitor AI API usage and costs
+✅ **Debugging:** Reproduce exact AI responses for support
+✅ **Academic Integrity:** Full audit trail of all AI interactions
+✅ **Compliance:** Meet data retention and transparency requirements
+
+---
+
+## 3. Database Schema (Supabase PostgreSQL)
+
+### 3.1. Core Tracking Tables
 
 ```sql
 -- ============================================
@@ -38,11 +88,19 @@ CREATE TABLE user_solutions (
     solution_text TEXT NOT NULL,
     difficulty_level INTEGER NOT NULL CHECK (difficulty_level IN (1, 3, 5)),
 
-    -- Assessment results
+    -- AI Detection results
     ai_detection_passed BOOLEAN,
     ai_detection_probability INTEGER, -- 0-100
+    ai_detection_justification TEXT, -- Why AI was/wasn't detected
+
+    -- Assessment results
     total_score INTEGER CHECK (total_score >= 0 AND total_score <= 100),
-    feedback_text TEXT, -- Full assessment feedback from Claude
+    feedback_text TEXT, -- FULL assessment feedback from Claude (complete evaluation)
+
+    -- AI Assessment metadata
+    assessment_model TEXT DEFAULT 'claude-sonnet-4-20250514',
+    assessment_tokens_used INTEGER,
+    assessment_duration_ms INTEGER, -- How long evaluation took
 
     -- Metadata
     attempt_number INTEGER NOT NULL DEFAULT 1,
@@ -105,6 +163,92 @@ CREATE TABLE chat_messages (
 CREATE INDEX idx_chat_messages_session ON chat_messages(session_id, message_sequence);
 CREATE INDEX idx_chat_messages_user ON chat_messages(user_id);
 CREATE INDEX idx_chat_messages_timestamp ON chat_messages(timestamp DESC);
+
+
+-- ============================================
+-- ASSESSMENT EVALUATIONS TABLE
+-- Stores detailed breakdown of AI assessment scores
+-- ============================================
+CREATE TABLE assessment_evaluations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    solution_id UUID NOT NULL REFERENCES user_solutions(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+    -- Breakdown scores (from the 100-point rubric)
+    -- I. Operațiuni Intelectuale (40 points)
+    score_understanding INTEGER, -- 1.1 Citirea și înțelegerea (5p)
+    score_identification INTEGER, -- 1.2 Identificarea elementelor (8p)
+    score_chronology INTEGER, -- 1.3 Ordonarea cronologică (5p)
+    score_summary INTEGER, -- 1.4 Rezumatul faptelor (7p)
+    score_legal_qualification INTEGER, -- 1.5 Calificarea juridică (10p)
+    score_problem_determination INTEGER, -- 1.6 Determinarea problemei (5p)
+
+    -- II. Redactarea Soluției (60 points)
+    score_introduction INTEGER, -- 2.1 Introducere (10p)
+    score_major_premise INTEGER, -- 2.2.1 Premisa majoră (20p)
+    score_minor_premise INTEGER, -- 2.2.2 Premisa minoră (15p)
+    score_conclusion INTEGER, -- 2.2.3 Concluzia (15p)
+
+    -- Parsed feedback sections
+    strong_points TEXT[], -- Array of strong points identified
+    weak_points TEXT[], -- Array of weak points identified
+    recommendations TEXT[], -- Array of improvement recommendations
+    general_commentary TEXT, -- Overall evaluation commentary
+
+    -- AI response metadata
+    full_response TEXT NOT NULL, -- Complete unstructured AI response
+    response_tokens INTEGER,
+    response_time_ms INTEGER,
+
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_assessment_evaluations_solution ON assessment_evaluations(solution_id);
+CREATE INDEX idx_assessment_evaluations_user ON assessment_evaluations(user_id);
+
+
+-- ============================================
+-- AI INTERACTIONS AUDIT LOG
+-- Unified log of ALL AI interactions across the platform
+-- ============================================
+CREATE TABLE ai_interactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+
+    -- Interaction type
+    interaction_type TEXT NOT NULL CHECK (interaction_type IN (
+        'chat_message',           -- AI tutor chat
+        'ai_detection',           -- AI detection check
+        'assessment_evaluation',  -- Full legal assessment
+        'system_message'          -- Other AI-generated content
+    )),
+
+    -- Context
+    context_type TEXT, -- 'case', 'general', 'admin'
+    context_id UUID, -- Reference to case_id, session_id, etc.
+
+    -- Request
+    user_prompt TEXT, -- What user submitted (if applicable)
+    system_prompt TEXT, -- System prompt used
+
+    -- Response
+    ai_response TEXT NOT NULL, -- Full AI response
+    model_name TEXT NOT NULL DEFAULT 'claude-sonnet-4-20250514',
+    tokens_used INTEGER,
+    response_time_ms INTEGER,
+
+    -- Metadata
+    success BOOLEAN DEFAULT TRUE,
+    error_message TEXT, -- If failed
+    api_call_cost_usd DECIMAL(10, 6), -- Track API costs
+
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_ai_interactions_user ON ai_interactions(user_id);
+CREATE INDEX idx_ai_interactions_type ON ai_interactions(interaction_type);
+CREATE INDEX idx_ai_interactions_created ON ai_interactions(created_at DESC);
+CREATE INDEX idx_ai_interactions_context ON ai_interactions(context_type, context_id);
 
 
 -- ============================================
@@ -300,6 +444,28 @@ CREATE POLICY "Users can view own achievements"
     ON user_achievements FOR SELECT
     USING (auth.uid() = user_id);
 
+-- assessment_evaluations: Students see only their own
+ALTER TABLE assessment_evaluations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own evaluations"
+    ON assessment_evaluations FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "System can insert evaluations"
+    ON assessment_evaluations FOR INSERT
+    WITH CHECK (true); -- System-generated
+
+-- ai_interactions: Students see only their own
+ALTER TABLE ai_interactions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own AI interactions"
+    ON ai_interactions FOR SELECT
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "System can log AI interactions"
+    ON ai_interactions FOR INSERT
+    WITH CHECK (true); -- System audit log
+
 
 -- ============================================
 -- ADMIN POLICIES (Add role column to user_profiles first)
@@ -464,6 +630,15 @@ GET    /v1/leaderboard
     - Get top students by points (anonymized)
     - Query params: ?limit=50
     - Response: { rankings: [{ username, points, rank }] }
+
+GET    /v1/assessments/:solution_id/evaluation
+    - Get detailed score breakdown for a solution
+    - Response: { scores: { understanding: 4, identification: 7, ... }, strong_points: [...] }
+
+GET    /v1/ai-interactions/me
+    - Get my AI interaction history (audit log)
+    - Query params: ?type, ?limit, ?offset
+    - Response: { interactions: [...], total_tokens, total_cost }
 ```
 
 ### 5.2. Admin/Instructor Endpoints
@@ -497,6 +672,24 @@ POST   /v1/admin/achievements
 GET    /v1/admin/activity/recent
     - Recent activity feed (last 100 actions)
     - Response: { activities: [{ user, action, timestamp }] }
+
+GET    /v1/admin/ai-interactions
+    - Get all AI interactions platform-wide
+    - Query params: ?type, ?user_id, ?date_from, ?date_to, ?limit
+    - Response: { interactions: [...], total_tokens, total_cost }
+
+GET    /v1/admin/ai-interactions/costs
+    - Get AI usage costs and metrics
+    - Query params: ?period=day|week|month
+    - Response: { total_cost, cost_by_type, cost_by_user, tokens_used }
+
+GET    /v1/admin/assessments/:solution_id/evaluation
+    - Get full evaluation details for any solution
+    - Response: { evaluation, scores, feedback, ai_metadata }
+
+GET    /v1/admin/assessments/analytics
+    - Get assessment analytics
+    - Response: { avg_scores_by_criteria, common_weak_points, ai_detection_stats }
 ```
 
 ---
@@ -712,6 +905,15 @@ Add a button to view past chat sessions:
     - "Submitted solution", "Started chat", "Viewed case"
   </ActivityTimeline>
 
+  {/* AI Interactions Log */}
+  <AIInteractionsLog>
+    - All AI calls made by this user
+    - Type: Chat, Detection, Assessment
+    - Tokens used, cost tracking
+    - Success/failure status
+    - Export for analysis
+  </AIInteractionsLog>
+
 </UserDetailView>
 ```
 
@@ -742,6 +944,54 @@ Add a button to view past chat sessions:
   </UserAIStats>
 
 </AIDetectionDashboard>
+```
+
+### 7.4. AI Interactions Monitor
+
+**Location:** `/admin/ai-interactions`
+
+```tsx
+<AIInteractionsDashboard>
+
+  {/* Usage Metrics */}
+  <AIUsageMetrics>
+    - Total API calls today/week/month
+    - Total tokens consumed
+    - Estimated costs (USD)
+    - By type: Chat vs Assessment vs Detection
+  </AIUsageMetrics>
+
+  {/* Cost Tracking */}
+  <CostAnalysis>
+    - Line chart of daily API costs
+    - Cost per user breakdown
+    - Most expensive operations
+    - Budget alerts
+  </CostAnalysis>
+
+  {/* Interaction Log */}
+  <InteractionLog>
+    - Real-time feed of AI calls
+    - Filter by: user, type, success/fail
+    - Search prompts and responses
+    - Performance metrics (response time)
+  </InteractionLog>
+
+  {/* Error Analysis */}
+  <ErrorLog>
+    - Failed AI calls
+    - Error messages and debugging
+    - Retry statistics
+  </ErrorLog>
+
+  {/* Model Usage Stats */}
+  <ModelUsage>
+    - Which models used (claude-sonnet-4-20250514, etc.)
+    - Average tokens per interaction type
+    - Response time distribution
+  </ModelUsage>
+
+</AIInteractionsDashboard>
 ```
 
 ---
@@ -802,12 +1052,16 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ### Phase 1: Core Tracking (Week 1-2)
 - ✅ Create database tables and RLS policies
 - ✅ Implement solution submission tracking
+- ✅ **Create assessment_evaluations table** (detailed score breakdowns)
+- ✅ **Create ai_interactions table** (unified AI audit log)
 - ✅ Create basic user_progress table
 - ✅ Add API endpoints for solution submission
+- ✅ **Implement AI interaction logging** for all Claude API calls
 
 ### Phase 2: Chat Tracking (Week 2-3)
 - ✅ Implement chat session/message tracking
-- ✅ Update useChat hook to log to database
+- ✅ Update useChat hook to log to database AND ai_interactions table
+- ✅ Update assessmentService to log AI detection + evaluation to ai_interactions
 - ✅ Create chat history API endpoints
 
 ### Phase 3: Student Views (Week 3-4)
