@@ -7,7 +7,7 @@ import type { ChatMessage, ChatContext } from '../types/chat';
 const INITIAL_MESSAGE: ChatMessage = {
   id: '0',
   role: 'assistant',
-  content: 'Salut! Spune problema - te ghidez prin �ntrebri. 3 runde, apoi rezolvi tu. Hai!',
+  content: 'Salut! Te ghidez in 3 runde sa rezolvi speta!',
   timestamp: new Date()
 };
 
@@ -60,7 +60,7 @@ export const useChat = (caseId: string | null, caseContext?: ChatContext) => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       console.error('Error sending message:', err);
-      setError('Ne pare ru, a aprut o eroare. Te rugm s �ncerci din nou.');
+      setError('Ne pare rău, a apărut o eroare. Te rugăm să încerci din nou.');
 
       // Remove the user message on error
       setMessages(prev => prev.filter(m => m.id !== userMessage.id));
