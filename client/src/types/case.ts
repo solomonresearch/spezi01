@@ -3,6 +3,8 @@
 export interface Case {
   id: string;
   title: string;
+  case_code: string;
+  verified: boolean;
   level: 'Ușor' | 'Mediu' | 'Dificil' | 'ușor' | 'mediu' | 'dificil';
   week_number: number;
   subcategory?: string;

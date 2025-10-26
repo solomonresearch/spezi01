@@ -277,7 +277,10 @@ export const Dashboard = () => {
                                   onClick={() => handleCaseClick(caseItem)}
                                 >
                                   <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
-                                  <span className="case-title-short">{caseItem.title}</span>
+                                  {caseItem.verified && <span className="verified-badge" title="Verificat de profesionist">✓</span>}
+                                  <span className="case-title-short">
+                                    {caseItem.case_code}: {caseItem.title.replace(/^Caz \d+:\s*/i, '')}
+                                  </span>
                                 </button>
                               </li>
                             ))
@@ -317,10 +320,17 @@ export const Dashboard = () => {
             <div className="case-display">
               <div className="case-header">
                 <div className="case-title-section">
-                  <h2 className="case-title">{caseData.title}</h2>
+                  <h2 className="case-title">
+                    {caseData.case_code}: {caseData.title.replace(/^Caz \d+:\s*/i, '')}
+                  </h2>
                   <span className={`case-level-badge ${caseData.level.toLowerCase()}`}>
                     {getDifficultyBadge(caseData.level)} {caseData.level}
                   </span>
+                  {caseData.verified && (
+                    <span className="verified-badge-large" title="Verificat de profesionist">
+                      ✓ Verificat
+                    </span>
+                  )}
                 </div>
               </div>
 
