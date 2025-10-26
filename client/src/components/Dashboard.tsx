@@ -548,7 +548,7 @@ Concluzia:
                     <div className="ai-detection-failed">
                       <div className="eggplant-message">
                         <span className="eggplant-emoji">🍆</span>
-                        <p>Nu fi un 🍆. Aceste vinete pot folosi și ele AI.</p>
+                        <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? Nu fi o leguma 🍆.</p>
                       </div>
                     </div>
                   )}
