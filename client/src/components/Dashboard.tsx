@@ -474,7 +474,7 @@ Concluzia:
                 className="assessment-header"
                 onClick={toggleAssessmentModule}
               >
-                <span className="assessment-title">📝 Modul de Evaluare Soluții Juridice</span>
+                <span className="assessment-title">✅ Verificare Soluție</span>
                 <span className="assessment-toggle-icon">{assessmentExpanded ? '▼' : '▶'}</span>
               </button>
 
