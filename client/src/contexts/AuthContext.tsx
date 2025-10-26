@@ -3,11 +3,19 @@ import type { ReactNode } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 
+interface UserProfile {
+  name: string;
+  username: string;
+  university_code: string;
+  university_category: string;
+  university_name: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, profile: UserProfile) => Promise<{ error: AuthError | Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
 }
@@ -51,12 +59,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    return { error };
+  const signUp = async (email: string, password: string, profile: UserProfile) => {
+    try {
+      // First, create the auth user
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (authError) {
+        return { error: authError };
+      }
+
+      if (!data.user) {
+        return { error: new Error('User creation failed') };
+      }
+
+      // Then, create the user profile
+      const { error: profileError } = await supabase
+        .from('user_profiles')
+        .insert({
+          id: data.user.id,
+          email: email,
+          name: profile.name,
+          username: profile.username,
+          university_code: profile.university_code,
+          university_category: profile.university_category,
+          university_name: profile.university_name,
+        });
+
+      if (profileError) {
+        // If profile creation fails, we should ideally delete the auth user
+        // but for now, just return the error
+        console.error('Profile creation error:', profileError);
+        return { error: new Error('Failed to create user profile: ' + profileError.message) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
