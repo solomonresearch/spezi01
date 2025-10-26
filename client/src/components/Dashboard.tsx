@@ -547,8 +547,8 @@ Concluzia:
                   {aiDetectionPassed === false && (
                     <div className="ai-detection-failed">
                       <div className="eggplant-message">
-                        <span className="eggplant-emoji">🍆</span>
-                        <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? Nu fi o leguma 🍆.</p>
+                        <span className="eggplant-emoji">🚫🤖</span>
+                        <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? 💀</p>
                       </div>
                     </div>
                   )}
