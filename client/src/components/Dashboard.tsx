@@ -40,6 +40,15 @@ export const Dashboard = () => {
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
+  // Resizable code container state
+  const [codeContainerHeight, setCodeContainerHeight] = useState<number>(() => {
+    const saved = localStorage.getItem('codeContainerHeight');
+    return saved ? parseInt(saved, 10) : 400;
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartY = useRef<number>(0);
+  const resizeStartHeight = useRef<number>(0);
+
   // Load cases from Supabase by subcategory
   const { cases, loading: casesLoading } = useCasesBySubcategory(expandedSubcategory);
   const { caseData, articles, steps, hints, loading: caseLoading } = useCase(selectedCaseId);
@@ -80,6 +89,45 @@ export const Dashboard = () => {
       setCivilCodeText('');
     }
   }, [selectedCodeType]);
+
+  // Save code container height to localStorage
+  useEffect(() => {
+    localStorage.setItem('codeContainerHeight', codeContainerHeight.toString());
+  }, [codeContainerHeight]);
+
+  // Resize event handlers
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const delta = e.clientY - resizeStartY.current;
+      const newHeight = Math.min(
+        Math.max(resizeStartHeight.current + delta, 150), // min: 150px
+        window.innerHeight * 0.8 // max: 80% of viewport height
+      );
+
+      setCodeContainerHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ns-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   const loadCivilCode = async () => {
     if (selectedCodeType !== 'civil') return;
@@ -154,6 +202,13 @@ export const Dashboard = () => {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    resizeStartY.current = e.clientY;
+    resizeStartHeight.current = codeContainerHeight;
   };
 
   return (
@@ -338,7 +393,10 @@ export const Dashboard = () => {
         {/* Right Sidebar - Code + Chat */}
         <aside className="right-sidebar">
           {/* Legal Code Display */}
-          <div className="code-display-container">
+          <div
+            className="code-display-container"
+            style={{ height: `${codeContainerHeight}px` }}
+          >
             {/* Code Type Selector */}
             <div className="code-header">
               <div className="code-type-selector-full">
@@ -373,6 +431,15 @@ export const Dashboard = () => {
             </div>
           </div>
 
+          {/* Resize Handle */}
+          <div
+            className="resize-handle"
+            onMouseDown={handleResizeStart}
+            title="Drag to resize"
+          >
+            <div className="resize-handle-line"></div>
+          </div>
+
           {/* AI Chat */}
           <div className="chat-container">
             <h3 className="chat-title">AI Assistant</h3>
@@ -404,7 +471,7 @@ export const Dashboard = () => {
                 className="chat-text-input"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 disabled={chatLoading}
               />
               <button
