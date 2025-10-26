@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useCasesBySubcategory, useCase } from '../hooks/useCases';
 import { useChat } from '../hooks/useChat';
+import { useAssessment } from '../hooks/useAssessment';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
 
@@ -49,6 +50,20 @@ export const Dashboard = () => {
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartY = useRef<number>(0);
   const resizeStartHeight = useRef<number>(0);
+
+  // Assessment module state
+  const [assessmentExpanded, setAssessmentExpanded] = useState(false);
+  const [difficultyLevel, setDifficultyLevel] = useState<1 | 3 | 5>(3);
+  const [solutionText, setSolutionText] = useState('');
+  const {
+    isDetecting,
+    isAssessing,
+    aiDetectionPassed,
+    assessmentResult,
+    error: assessmentError,
+    assessSolution: submitAssessment,
+    reset: resetAssessment
+  } = useAssessment();
 
   // Load cases from Supabase by subcategory
   const { cases, loading: casesLoading } = useCasesBySubcategory(expandedSubcategory);
@@ -212,6 +227,48 @@ export const Dashboard = () => {
     resizeStartY.current = e.clientY;
     resizeStartHeight.current = codeContainerHeight;
   };
+
+  // Assessment module handlers
+  const SOLUTION_TEMPLATE = `INTRODUCERE:
+
+Fapte esențiale reținute:
+[Rezumați faptele relevante juridic din caz]
+
+Calificare juridică:
+[Identificați natura juridică a actelor/faptelor]
+
+Problema juridică:
+[Formulați concis problema de drept care trebuie rezolvată]
+
+
+ANALIZA PRIN SILOGISM:
+
+Premisa majoră (Regulile de drept aplicabile):
+[Citați și explicați articolele din Codul Civil, jurisprudența relevantă]
+
+Premisa minoră (Aplicarea la cazul concret):
+[Conectați faptele concrete cu regulile de drept]
+
+Concluzia:
+[Răspuns motivat la întrebarea din caz]`;
+
+  const handleDifficultyChange = (level: 1 | 3 | 5) => {
+    setDifficultyLevel(level);
+  };
+
+  const handleAssessmentSubmit = () => {
+    submitAssessment(solutionText, difficultyLevel);
+  };
+
+  const toggleAssessmentModule = () => {
+    setAssessmentExpanded(!assessmentExpanded);
+  };
+
+  // Reset assessment when case changes
+  useEffect(() => {
+    resetAssessment();
+    setSolutionText('');
+  }, [selectedCaseId, resetAssessment]);
 
   return (
     <div className="app-container">
@@ -403,6 +460,124 @@ export const Dashboard = () => {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Assessment Module */}
+          {caseData && (
+            <div className="assessment-module">
+              <button
+                className="assessment-header"
+                onClick={toggleAssessmentModule}
+              >
+                <span className="assessment-title">📝 Modul de Evaluare Soluții Juridice</span>
+                <span className="assessment-toggle-icon">{assessmentExpanded ? '▼' : '▶'}</span>
+              </button>
+
+              {assessmentExpanded && (
+                <div className="assessment-content">
+                  {/* Difficulty Slider */}
+                  <div className="difficulty-selector">
+                    <label className="difficulty-label">Nivelul de Exigență:</label>
+                    <div className="difficulty-slider">
+                      <button
+                        className={`difficulty-option ${difficultyLevel === 1 ? 'active' : ''}`}
+                        onClick={() => handleDifficultyChange(1)}
+                        title="Ciocan Juridic Ușor"
+                      >
+                        <span className="hammer-icon">🔨</span>
+                        <span className="difficulty-text">Ușor</span>
+                      </button>
+                      <button
+                        className={`difficulty-option ${difficultyLevel === 3 ? 'active' : ''}`}
+                        onClick={() => handleDifficultyChange(3)}
+                        title="Ciocan Juridic Mediu"
+                      >
+                        <span className="hammer-icon">🔨🔨🔨</span>
+                        <span className="difficulty-text">Mediu</span>
+                      </button>
+                      <button
+                        className={`difficulty-option ${difficultyLevel === 5 ? 'active' : ''}`}
+                        onClick={() => handleDifficultyChange(5)}
+                        title="Ciocan Juridic Greu"
+                      >
+                        <span className="hammer-icon">🔨🔨🔨🔨🔨</span>
+                        <span className="difficulty-text">Greu</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Solution Text Area */}
+                  <div className="solution-input-section">
+                    <label className="solution-label">Soluția Ta:</label>
+                    <textarea
+                      className="solution-textarea"
+                      value={solutionText}
+                      onChange={(e) => setSolutionText(e.target.value)}
+                      placeholder={SOLUTION_TEMPLATE}
+                      rows={15}
+                      disabled={isDetecting || isAssessing}
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="assessment-actions">
+                    <button
+                      className="btn-assess"
+                      onClick={handleAssessmentSubmit}
+                      disabled={!solutionText.trim() || isDetecting || isAssessing}
+                    >
+                      {isDetecting ? 'Verificare AI în curs...' : isAssessing ? 'Evaluare în curs...' : 'Evaluează Soluția'}
+                    </button>
+                  </div>
+
+                  {/* Loading Spinner */}
+                  {(isDetecting || isAssessing) && (
+                    <div className="assessment-loading">
+                      <div className="spinner"></div>
+                      <p>{isDetecting ? 'Se verifică autenticitatea textului...' : 'Se evaluează soluția...'}</p>
+                    </div>
+                  )}
+
+                  {/* AI Detection Failed Message */}
+                  {aiDetectionPassed === false && (
+                    <div className="ai-detection-failed">
+                      <div className="eggplant-message">
+                        <span className="eggplant-emoji">🍆</span>
+                        <p>Nu fi un 🍆. Aceste vinete pot folosi și ele AI.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {assessmentError && (
+                    <div className="assessment-error">
+                      <p>{assessmentError}</p>
+                    </div>
+                  )}
+
+                  {/* Assessment Result */}
+                  {assessmentResult && aiDetectionPassed === true && (
+                    <div className="assessment-result">
+                      <div className="result-header">
+                        <h3>✅ Evaluare Completă</h3>
+                        <button
+                          className="btn-reset-assessment"
+                          onClick={() => {
+                            resetAssessment();
+                            setSolutionText('');
+                          }}
+                        >
+                          Resetează
+                        </button>
+                      </div>
+                      <div className="result-content">
+                        <pre className="result-text">{assessmentResult}</pre>
+                      </div>
                     </div>
                   )}
                 </div>
