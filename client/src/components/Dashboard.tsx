@@ -322,7 +322,6 @@ export const Dashboard = () => {
                     {getDifficultyBadge(caseData.level)} {caseData.level}
                   </span>
                 </div>
-                <span className="case-week">Săptămâna {caseData.week_number}</span>
               </div>
 
               <div className="case-section">
