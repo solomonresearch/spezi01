@@ -35,6 +35,7 @@ export const Dashboard = () => {
   const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoana fizică (Capacitatea de exercițiu)');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(false);
+  const [showSteps, setShowSteps] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [civilCodeText, setCivilCodeText] = useState<string>('');
@@ -165,6 +166,7 @@ export const Dashboard = () => {
   const handleCaseClick = (caseItem: Case) => {
     setSelectedCaseId(caseItem.id);
     setShowHints(false); // Reset hints when switching cases
+    setShowSteps(false); // Reset steps when switching cases
   };
 
   const toggleSidebar = () => {
@@ -353,14 +355,24 @@ export const Dashboard = () => {
 
               {steps.length > 0 && (
                 <div className="case-section">
-                  <h3>🔍 Pași de analiză așteptați</h3>
-                  <ol className="analysis-steps">
-                    {steps.map((step) => (
-                      <li key={step.id} className="analysis-step">
-                        {step.step_description}
-                      </li>
-                    ))}
-                  </ol>
+                  <button
+                    className="btn-toggle-hints"
+                    onClick={() => setShowSteps(!showSteps)}
+                  >
+                    {showSteps ? 'Ascunde Pași de analiză' : 'Arată Pași de analiză'} 🔍
+                  </button>
+                  {showSteps && (
+                    <div className="hints-content">
+                      <h4>Pași de analiză așteptați:</h4>
+                      <ol className="analysis-steps">
+                        {steps.map((step) => (
+                          <li key={step.id} className="analysis-step">
+                            {step.step_description}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  )}
                 </div>
               )}
 
