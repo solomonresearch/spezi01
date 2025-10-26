@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useCasesBySubcategory, useCase } from '../hooks/useCases';
+import { useChat } from '../hooks/useChat';
 import type { Case } from '../types/case';
+import type { ChatContext } from '../types/chat';
 
 const lawCategories = [
   {
@@ -42,6 +44,20 @@ export const Dashboard = () => {
   const { cases, loading: casesLoading } = useCasesBySubcategory(expandedSubcategory);
   const { caseData, articles, steps, hints, loading: caseLoading } = useCase(selectedCaseId);
 
+  // Build chat context from current case
+  const chatContext: ChatContext | undefined = caseData ? {
+    caseTitle: caseData.title,
+    caseDescription: caseData.case_description,
+    legalProblem: caseData.legal_problem,
+    question: caseData.question,
+    articles: articles.map(a => a.article_reference)
+  } : undefined;
+
+  // AI Chat hook
+  const { messages, isLoading: chatLoading, error: chatError, sendMessage } = useChat(selectedCaseId, chatContext);
+  const [chatInput, setChatInput] = useState('');
+  const chatMessagesEndRef = useRef<HTMLDivElement>(null);
+
   const codeTypes = [
     { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
     { id: 'constitution', name: 'Constituția României', icon: '🏛️' },
@@ -52,6 +68,11 @@ export const Dashboard = () => {
   useEffect(() => {
     loadCivilCode();
   }, []);
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Clear text when switching away from civil code
   useEffect(() => {
@@ -116,6 +137,22 @@ export const Dashboard = () => {
       loadCivilCode();
     } else {
       setSelectedCodeType(codeType);
+    }
+  };
+
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!chatInput.trim() || chatLoading) return;
+
+    const message = chatInput;
+    setChatInput('');
+    await sendMessage(message);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -340,24 +377,44 @@ export const Dashboard = () => {
           <div className="chat-container">
             <h3 className="chat-title">AI Assistant</h3>
             <div className="chat-messages">
-              <div className="message bot-message">
-                <p>Bună! Sunt aici să te ajut cu studiul dreptului civil. Pune-mi orice întrebare despre cazul curent.</p>
-              </div>
-              <div className="message user-message">
-                <p>Lorem ipsum dolor sit amet?</p>
-              </div>
-              <div className="message bot-message">
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Capacitatea de folosință reprezintă...</p>
-              </div>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
+                >
+                  <p>{message.content}</p>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="message bot-message">
+                  <p className="typing-indicator">...</p>
+                </div>
+              )}
+              {chatError && (
+                <div className="message error-message">
+                  <p>{chatError}</p>
+                </div>
+              )}
+              <div ref={chatMessagesEndRef} />
             </div>
-            <div className="chat-input">
+            <form className="chat-input" onSubmit={handleSendMessage}>
               <input
                 type="text"
                 placeholder="Scrie întrebarea ta aici..."
                 className="chat-text-input"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={chatLoading}
               />
-              <button className="btn-send">Trimite</button>
-            </div>
+              <button
+                type="submit"
+                className="btn-send"
+                disabled={chatLoading || !chatInput.trim()}
+              >
+                Trimite
+              </button>
+            </form>
           </div>
         </aside>
       </div>
