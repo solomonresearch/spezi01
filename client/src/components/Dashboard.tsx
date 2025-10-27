@@ -56,6 +56,7 @@ export const Dashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [civilCodeText, setCivilCodeText] = useState<string>('');
+  const [constitutionText, setConstitutionText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   // Search state
@@ -115,22 +116,15 @@ export const Dashboard = () => {
     { id: 'criminal', name: 'Codul Penal', icon: '👮' }
   ];
 
-  // Load civil code on initial mount
+  // Load code when selectedCodeType changes
   useEffect(() => {
-    loadCivilCode();
-  }, []);
+    loadCode(selectedCodeType);
+  }, [selectedCodeType]);
 
   // Auto-scroll chat to bottom when new messages arrive
   useEffect(() => {
     chatMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Clear text when switching away from civil code
-  useEffect(() => {
-    if (selectedCodeType !== 'civil') {
-      setCivilCodeText('');
-    }
-  }, [selectedCodeType]);
 
   // Save code container height to localStorage
   useEffect(() => {
@@ -171,21 +165,35 @@ export const Dashboard = () => {
     };
   }, [isResizing]);
 
-  const loadCivilCode = async () => {
-    if (selectedCodeType !== 'civil') return;
+  const loadCode = async (codeType: 'civil' | 'constitution' | 'criminal') => {
+    // Don't load criminal code (not available yet)
+    if (codeType === 'criminal') return;
 
     setLoading(true);
     try {
+      let fileName = '';
+      let setter: (text: string) => void;
+
+      if (codeType === 'civil') {
+        fileName = '/codcivil.txt';
+        setter = setCivilCodeText;
+      } else if (codeType === 'constitution') {
+        fileName = '/constitutie.txt';
+        setter = setConstitutionText;
+      } else {
+        return;
+      }
+
       // Fetch the text file from public folder and display as-is
-      const response = await fetch('/codcivil.txt');
+      const response = await fetch(fileName);
       if (!response.ok) {
-        throw new Error('Failed to load civil code');
+        throw new Error(`Failed to load ${codeType} code`);
       }
 
       const content = await response.text();
-      setCivilCodeText(content);
+      setter(content);
     } catch (error) {
-      console.error('Error loading civil code:', error);
+      console.error(`Error loading ${codeType} code:`, error);
     } finally {
       setLoading(false);
     }
@@ -235,9 +243,9 @@ export const Dashboard = () => {
   };
 
   const handleCodeTypeClick = (codeType: 'civil' | 'constitution' | 'criminal') => {
-    if (codeType === 'civil' && selectedCodeType === 'civil') {
-      // Reload civil code if already selected
-      loadCivilCode();
+    if (codeType === selectedCodeType) {
+      // Reload code if already selected
+      loadCode(codeType);
     } else {
       setSelectedCodeType(codeType);
     }
@@ -707,17 +715,21 @@ Concluzia:
             {/* Code Content */}
             <div className="code-content">
               {loading ? (
-                <p className="code-placeholder">Se încarcă Codul Civil...</p>
-              ) : selectedCodeType === 'civil' && !civilCodeText ? (
-                <p className="code-placeholder">Nu există text</p>
-              ) : selectedCodeType !== 'civil' ? (
+                <p className="code-placeholder">
+                  Se încarcă {codeTypes.find(c => c.id === selectedCodeType)?.name}...
+                </p>
+              ) : selectedCodeType === 'civil' && civilCodeText ? (
+                <pre className="code-text">{civilCodeText}</pre>
+              ) : selectedCodeType === 'constitution' && constitutionText ? (
+                <pre className="code-text">{constitutionText}</pre>
+              ) : selectedCodeType === 'criminal' ? (
                 <div className="coming-soon">
                   <p className="coming-soon-icon">{codeTypes.find(c => c.id === selectedCodeType)?.icon}</p>
                   <p className="coming-soon-text">În curând</p>
                   <p className="coming-soon-subtitle">Acest cod nu este disponibil încă</p>
                 </div>
               ) : (
-                <pre className="code-text">{civilCodeText}</pre>
+                <p className="code-placeholder">Nu există text</p>
               )}
             </div>
           </div>
