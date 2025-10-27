@@ -17,19 +17,22 @@ CREATE POLICY "cases_select_policy" ON cases
     TO authenticated
     USING (true);
 
--- Allow authenticated users to insert cases
+-- Allow admins to insert cases
 CREATE POLICY "cases_insert_policy" ON cases
     FOR INSERT
     TO authenticated
-    WITH CHECK (true);
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM user_profiles
+            WHERE id = auth.uid() AND is_admin = TRUE
+        )
+    );
 
--- Allow users to update their own cases or admins to update any
+-- Allow admins to update cases
 CREATE POLICY "cases_update_policy" ON cases
     FOR UPDATE
     TO authenticated
     USING (
-        auth.uid() = created_by_id
-        OR
         EXISTS (
             SELECT 1 FROM user_profiles
             WHERE id = auth.uid() AND is_admin = TRUE

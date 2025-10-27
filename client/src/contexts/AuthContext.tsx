@@ -52,20 +52,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Fetch user profile from database
   const fetchProfile = async (userId: string): Promise<DBUserProfile | null> => {
     try {
-      const { data, error } = await supabase
+      console.log('Fetching profile for user:', userId);
+
+      // Create a timeout promise
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Profile fetch timeout after 3 seconds')), 3000);
+      });
+
+      // Race between fetch and timeout
+      const fetchPromise = supabase
         .from('user_profiles')
         .select('id, email, name, username, is_admin')
         .eq('id', userId)
         .single();
 
+      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
       if (error) {
         console.error('Error fetching profile:', error);
+        console.error('Error details:', error.message, error.code);
         return null;
       }
 
+      console.log('Profile fetched successfully:', data);
       return data as DBUserProfile;
     } catch (error) {
       console.error('Exception while fetching profile:', error);
+      // Return null so the app can still load
       return null;
     }
   };
