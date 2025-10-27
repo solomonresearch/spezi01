@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import type { DifficultyLevel } from '../../types/caseGenerator';
-import { DIFFICULTY_OPTIONS, WEEK_OPTIONS } from '../../constants/caseGeneratorData';
+import type { DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
+import { DIFFICULTY_OPTIONS, WEEK_OPTIONS, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
 
 interface ConfigurationPanelProps {
+  selectedDomain: LegalDomain | null;
   difficultyLevel: DifficultyLevel;
   weekNumber: number;
   subcategory: string;
@@ -12,6 +13,7 @@ interface ConfigurationPanelProps {
 }
 
 export const ConfigurationPanel = ({
+  selectedDomain,
   difficultyLevel,
   weekNumber,
   subcategory,
@@ -88,22 +90,51 @@ export const ConfigurationPanel = ({
 
       {/* Subcategory */}
       <div className="config-section">
-        <h3 className="config-section-title">Subcategorie (opțional)</h3>
-        <p className="config-hint">
-          Adaugă o subcategorie pentru organizare mai detaliată (ex: "Capacitate de exercițiu", "Nulitate absolută")
-        </p>
-        <input
-          type="text"
-          className="subcategory-input"
-          placeholder="Ex: Capacitate de exercițiu, Nulitate absolută, etc."
-          value={subcat}
-          onChange={(e) => setSubcat(e.target.value)}
-          maxLength={100}
-        />
-        {subcat && (
-          <div className="field-hint success">
-            ✓ Subcategorie: {subcat}
-          </div>
+        <h3 className="config-section-title">
+          Subcategorie {selectedDomain === 'civil' ? '*' : '(opțional)'}
+        </h3>
+        {selectedDomain === 'civil' ? (
+          <>
+            <p className="config-hint">
+              Selectează subcategoria pentru drept civil (conform structurii cursului)
+            </p>
+            <select
+              className="week-select"
+              value={subcat}
+              onChange={(e) => setSubcat(e.target.value)}
+            >
+              <option value="">Selectează subcategoria...</option>
+              {CIVIL_SUBCATEGORIES.map((subcatOption) => (
+                <option key={subcatOption} value={subcatOption}>
+                  {subcatOption}
+                </option>
+              ))}
+            </select>
+            {subcat && (
+              <div className="field-hint success">
+                ✓ Subcategorie: {subcat}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="config-hint">
+              Adaugă o subcategorie pentru organizare mai detaliată (opțional)
+            </p>
+            <input
+              type="text"
+              className="subcategory-input"
+              placeholder="Ex: Infracțiuni contra patrimoniului, Separația puterilor, etc."
+              value={subcat}
+              onChange={(e) => setSubcat(e.target.value)}
+              maxLength={100}
+            />
+            {subcat && (
+              <div className="field-hint success">
+                ✓ Subcategorie: {subcat}
+              </div>
+            )}
+          </>
         )}
       </div>
 

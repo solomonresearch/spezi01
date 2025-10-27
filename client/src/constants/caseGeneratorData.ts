@@ -20,6 +20,21 @@ export const DOMAINS: DomainOption[] = [
   }
 ];
 
+// Civil law subcategories for the dropdown
+export const CIVIL_SUBCATEGORIES = [
+  'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
+  'Persoana fizică (Capacitatea de exercițiu)',
+  'Persoana fizică (Ocrotirea incapabilului)',
+  'Persoana fizică (Elemente de identificare. Starea civilă)',
+  'Persoana juridică (Noțiune, Capacitate)',
+  'Persoana juridică (Funcționarea persoanei juridice)',
+  'Exercitarea drepturilor subiective civile. Abuzul de drept',
+  'Apărarea drepturilor nepatrimoniale',
+  'Aplicarea legii civile în timp și spațiu I',
+  'Aplicarea legii civile în timp și spațiu II',
+  'Altele'
+];
+
 export const CATEGORIES: CategoryOption[] = [
   // DREPT CIVIL
   {
