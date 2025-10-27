@@ -10,9 +10,9 @@ export const DomainSelector = ({ selectedDomain, onSelect }: DomainSelectorProps
   return (
     <div className="domain-selector">
       <div className="step-header">
-        <h2>Selectează domeniul juridic</h2>
+        <h2>Selectează domeniul juridic (opțional)</h2>
         <p className="step-description">
-          Alege domeniul pentru care vrei să generezi cazul practic
+          Alege domeniul pentru care vrei să generezi cazul practic, sau sări la pasul următor pentru un caz random
         </p>
       </div>
 

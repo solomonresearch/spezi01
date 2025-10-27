@@ -64,9 +64,9 @@ export const ArticleSelector = ({ selectedDomain, selectedArticles, onChange }: 
   return (
     <div className="article-selector">
       <div className="step-header">
-        <h2>Adaugă articole relevante</h2>
+        <h2>Adaugă articole relevante (opțional)</h2>
         <p className="step-description">
-          Introdu articolele din {getCodeName()} care vor fi folosite în caz (minim 1)
+          Introdu articolele din {getCodeName()} care vor fi folosite în caz, sau lasă gol pentru selecție aleatorie
         </p>
       </div>
 

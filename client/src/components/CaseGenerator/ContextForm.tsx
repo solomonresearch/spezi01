@@ -15,41 +15,33 @@ export const ContextForm = ({ topicDescription, specificFocus, onChange }: Conte
     onChange(topic, focus);
   }, [topic, focus, onChange]);
 
-  const remainingChars = 50 - topic.length;
-  const isTopicValid = topic.length >= 50;
-
   return (
     <div className="context-form">
       <div className="step-header">
-        <h2>Definește contextul cazului</h2>
+        <h2>Definește contextul cazului (opțional)</h2>
         <p className="step-description">
-          Oferă detalii despre situația pe care vrei să o abordeze cazul
+          Oferă detalii despre situația pe care vrei să o abordeze cazul, sau lasă gol pentru un context aleatoriu
         </p>
       </div>
 
       <div className="form-group">
         <label htmlFor="topic-description" className="form-label">
-          <span className="label-text">Descrierea contexului *</span>
-          <span className={`char-counter ${isTopicValid ? 'valid' : 'invalid'}`}>
-            {topic.length >= 50 ? `${topic.length} caractere` : `Încă ${remainingChars} caractere`}
+          <span className="label-text">Descrierea contexului (opțional)</span>
+          <span className="char-counter optional">
+            {topic.length} caractere
           </span>
         </label>
         <textarea
           id="topic-description"
-          className={`form-textarea ${isTopicValid ? 'valid' : ''}`}
+          className="form-textarea"
           rows={6}
           placeholder="Descrie situația generală, tema sau subiectul pe care îl abordează cazul...&#10;&#10;Exemplu: Un caz despre răspunderea civilă delictuală într-un accident rutier în care o persoană a fost rănită de un vehicul condus de un șofer aflat sub influența alcoolului. Cazul va explora condițiile răspunderii civile și ale daunelor morale."
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
         />
-        {!isTopicValid && topic.length > 0 && (
-          <div className="field-hint error">
-            ⚠️ Minim 50 de caractere necesare pentru o descriere completă
-          </div>
-        )}
-        {isTopicValid && (
+        {topic.length > 0 && (
           <div className="field-hint success">
-            ✓ Descriere validă
+            ✓ Context specificat
           </div>
         )}
       </div>
@@ -85,7 +77,7 @@ export const ContextForm = ({ topicDescription, specificFocus, onChange }: Conte
         </ul>
       </div>
 
-      {isTopicValid && (
+      {topic && (
         <div className="preview-box">
           <h4>📝 Rezumat context:</h4>
           <p className="preview-text">

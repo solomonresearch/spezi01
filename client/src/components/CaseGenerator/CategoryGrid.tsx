@@ -33,9 +33,9 @@ export const CategoryGrid = ({ selectedDomain, selectedCategories, onChange }: C
   return (
     <div className="category-selector">
       <div className="step-header">
-        <h2>Selectează categoriile</h2>
+        <h2>Selectează categoriile (opțional)</h2>
         <p className="step-description">
-          Alege una sau mai multe categorii juridice pentru caz (minim 1)
+          Alege una sau mai multe categorii juridice pentru caz, sau lasă gol pentru selecție aleatorie
         </p>
       </div>
 

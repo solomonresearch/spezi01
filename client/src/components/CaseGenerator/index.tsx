@@ -63,47 +63,20 @@ export const CaseGenerator = () => {
     setState(prev => ({ ...prev, generatedCase: updatedCase }));
   }, []);
 
-  // Validation for each step
-  const validateStep = useCallback((step: number): boolean => {
-    const newErrors: string[] = [];
-
-    switch (step) {
-      case 1:
-        if (!state.selectedDomain) {
-          newErrors.push('Selectează un domeniu juridic');
-        }
-        break;
-      case 2:
-        if (state.selectedCategories.length === 0) {
-          newErrors.push('Selectează cel puțin o categorie');
-        }
-        break;
-      case 3:
-        if (state.selectedArticles.length === 0) {
-          newErrors.push('Adaugă cel puțin un articol');
-        }
-        break;
-      case 4:
-        if (state.topicDescription.length < 50) {
-          newErrors.push('Descrierea contextului trebuie să aibă minim 50 caractere');
-        }
-        break;
-      case 5:
-        // Configuration is always valid (has defaults)
-        break;
-    }
-
-    setErrors(newErrors);
-    return newErrors.length === 0;
-  }, [state]);
+  // No validation - all fields are optional
+  const validateStep = useCallback((): boolean => {
+    // All steps are valid, everything is optional
+    setErrors([]);
+    return true;
+  }, []);
 
   // Navigation handlers
   const goToNextStep = useCallback(() => {
-    if (validateStep(currentStep)) {
+    if (validateStep()) {
       setCurrentStep(prev => Math.min(prev + 1, 5));
       setErrors([]);
     }
-  }, [currentStep, validateStep]);
+  }, [validateStep]);
 
   const goToPreviousStep = useCallback(() => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -112,7 +85,7 @@ export const CaseGenerator = () => {
 
   // AI Generation handler
   const handleGenerate = useCallback(async () => {
-    if (!validateStep(5)) return;
+    if (!validateStep()) return;
 
     setState(prev => ({ ...prev, isGenerating: true }));
     setErrors([]);

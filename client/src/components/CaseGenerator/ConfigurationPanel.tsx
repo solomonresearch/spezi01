@@ -35,15 +35,15 @@ export const ConfigurationPanel = ({
   return (
     <div className="configuration-panel">
       <div className="step-header">
-        <h2>Configurează parametrii cazului</h2>
+        <h2>Configurează parametrii cazului (opțional)</h2>
         <p className="step-description">
-          Alege nivelul de dificultate, săptămâna și subcategoria (opțional)
+          Toate câmpurile sunt opționale - lasă valorile implicite pentru un caz aleatoriu
         </p>
       </div>
 
       {/* Difficulty Level */}
       <div className="config-section">
-        <h3 className="config-section-title">Nivel de dificultate *</h3>
+        <h3 className="config-section-title">Nivel de dificultate (opțional)</h3>
         <div className="difficulty-options">
           {DIFFICULTY_OPTIONS.map(option => (
             <label
@@ -73,9 +73,9 @@ export const ConfigurationPanel = ({
 
       {/* Week Number */}
       <div className="config-section">
-        <h3 className="config-section-title">Săptămâna de curs *</h3>
+        <h3 className="config-section-title">Săptămâna de curs (opțional)</h3>
         <p className="config-hint">
-          Selectează săptămâna pentru organizarea cazurilor în curriculum
+          Selectează săptămâna pentru organizarea cazurilor în curriculum, sau lasă valoarea implicită
         </p>
         <select
           className="week-select"
@@ -93,7 +93,7 @@ export const ConfigurationPanel = ({
       {/* Subcategory */}
       <div className="config-section">
         <h3 className="config-section-title">
-          Subcategorie {(selectedDomain === 'civil' || selectedDomain === 'constitutional') ? '*' : '(opțional)'}
+          Subcategorie (opțional)
         </h3>
         {selectedDomain === 'civil' ? (
           <>
