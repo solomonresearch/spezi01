@@ -73,11 +73,22 @@ export const Reporting = () => {
   const navigate = useNavigate();
   const [expandedConvs, setExpandedConvs] = useState<Set<number>>(new Set());
 
-  const completedCases = mockCasesProgress.filter(c => c.status === 'completed').length;
-  const inProgressCases = mockCasesProgress.filter(c => c.status === 'in_progress').length;
+  // A case is completed if it has a submission with score > 50/100
+  const completedCases = mockSubmissions.filter(sub => {
+    const score = parseInt(sub.score.split('/')[0]);
+    const total = parseInt(sub.score.split('/')[1]);
+    return (score / total) > 0.5;
+  }).length;
+
   const totalSubmissions = mockSubmissions.length;
+
+  // Average score across all submissions
   const averageScore = mockSubmissions.length > 0
-    ? (mockSubmissions.reduce((sum, s) => sum + parseInt(s.score.split('/')[0]), 0) / mockSubmissions.length).toFixed(1)
+    ? (mockSubmissions.reduce((sum, s) => {
+        const score = parseInt(s.score.split('/')[0]);
+        const total = parseInt(s.score.split('/')[1]);
+        return sum + (score / total) * 100;
+      }, 0) / mockSubmissions.length).toFixed(1)
     : 'N/A';
 
   const toggleConversation = (idx: number) => {
@@ -113,15 +124,11 @@ export const Reporting = () => {
             <span className="stat-compact-label">Completed</span>
           </div>
           <div className="stat-compact">
-            <span className="stat-compact-value">{inProgressCases}</span>
-            <span className="stat-compact-label">In Progress</span>
-          </div>
-          <div className="stat-compact">
             <span className="stat-compact-value">{totalSubmissions}</span>
             <span className="stat-compact-label">Submissions</span>
           </div>
           <div className="stat-compact">
-            <span className="stat-compact-value">{averageScore}</span>
+            <span className="stat-compact-value">{averageScore}%</span>
             <span className="stat-compact-label">Avg Score</span>
           </div>
         </div>
