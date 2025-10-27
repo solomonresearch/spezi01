@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Fetch user profile from database
   const fetchProfile = async (userId: string): Promise<DBUserProfile | null> => {
     try {
-      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('user_profiles')
         .select('id, email, name, username, is_admin')
@@ -64,7 +63,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return null;
       }
 
-      console.log('Profile fetched successfully:', data);
       return data as DBUserProfile;
     } catch (error) {
       console.error('Exception while fetching profile:', error);
@@ -74,9 +72,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     // Get initial session
-    console.log('AuthContext: Initializing...');
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('AuthContext: Got initial session:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -85,10 +81,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(userProfile);
       }
 
-      console.log('AuthContext: Setting loading to false (initial session)');
       setLoading(false);
     }).catch((error) => {
-      console.error('AuthContext: Error getting initial session:', error);
+      console.error('Error getting initial session:', error);
       setLoading(false);
     });
 
@@ -96,7 +91,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('AuthContext: Auth state changed, event:', _event, 'user:', session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -107,7 +101,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setProfile(null);
       }
 
-      console.log('AuthContext: Setting loading to false (auth state change)');
       setLoading(false);
     });
 
