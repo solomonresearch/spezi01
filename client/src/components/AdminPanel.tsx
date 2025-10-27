@@ -13,7 +13,7 @@ interface UserProfile {
 }
 
 export const AdminPanel = () => {
-  const { profile, user } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
