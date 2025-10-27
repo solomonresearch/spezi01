@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
-import { DIFFICULTY_OPTIONS, WEEK_OPTIONS, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
+import { DIFFICULTY_OPTIONS, WEEK_OPTIONS } from '../../constants/caseGeneratorData';
+import { getAllCivilSubcategories } from '../../constants/civilLawCategories';
 
 interface ConfigurationPanelProps {
   selectedDomain: LegalDomain | null;
@@ -104,7 +105,7 @@ export const ConfigurationPanel = ({
               onChange={(e) => setSubcat(e.target.value)}
             >
               <option value="">Selectează subcategoria...</option>
-              {CIVIL_SUBCATEGORIES.map((subcatOption) => (
+              {getAllCivilSubcategories().map((subcatOption) => (
                 <option key={subcatOption} value={subcatOption}>
                   {subcatOption}
                 </option>
