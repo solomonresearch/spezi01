@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
 import { DIFFICULTY_OPTIONS, WEEK_OPTIONS } from '../../constants/caseGeneratorData';
 import { getAllCivilSubcategories } from '../../constants/civilLawCategories';
+import { getAllConstitutionalSubcategories } from '../../constants/constitutionalLawCategories';
 
 interface ConfigurationPanelProps {
   selectedDomain: LegalDomain | null;
@@ -92,7 +93,7 @@ export const ConfigurationPanel = ({
       {/* Subcategory */}
       <div className="config-section">
         <h3 className="config-section-title">
-          Subcategorie {selectedDomain === 'civil' ? '*' : '(opțional)'}
+          Subcategorie {(selectedDomain === 'civil' || selectedDomain === 'constitutional') ? '*' : '(opțional)'}
         </h3>
         {selectedDomain === 'civil' ? (
           <>
@@ -106,6 +107,29 @@ export const ConfigurationPanel = ({
             >
               <option value="">Selectează subcategoria...</option>
               {getAllCivilSubcategories().map((subcatOption) => (
+                <option key={subcatOption} value={subcatOption}>
+                  {subcatOption}
+                </option>
+              ))}
+            </select>
+            {subcat && (
+              <div className="field-hint success">
+                ✓ Subcategorie: {subcat}
+              </div>
+            )}
+          </>
+        ) : selectedDomain === 'constitutional' ? (
+          <>
+            <p className="config-hint">
+              Selectează subcategoria pentru drept constituțional (conform structurii cursului)
+            </p>
+            <select
+              className="week-select"
+              value={subcat}
+              onChange={(e) => setSubcat(e.target.value)}
+            >
+              <option value="">Selectează subcategoria...</option>
+              {getAllConstitutionalSubcategories().map((subcatOption) => (
                 <option key={subcatOption} value={subcatOption}>
                   {subcatOption}
                 </option>

@@ -2691,6 +2691,30 @@ body {
   padding: 40px 20px;
   min-height: 100vh;
   background: #f8f9fa;
+  position: relative;
+}
+
+.btn-back-to-dashboard {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.btn-back-to-dashboard:hover {
+  background: #667eea;
+  color: white;
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .case-generator-header {

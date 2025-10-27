@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { CaseGeneratorState, GeneratedCase, LegalDomain, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
 import { generateCaseCode } from '../../constants/caseGeneratorData';
 import { caseGeneratorService } from '../../services/caseGeneratorService';
@@ -10,6 +11,7 @@ import { ConfigurationPanel } from './ConfigurationPanel';
 import { GeneratedCaseEditor } from './GeneratedCaseEditor';
 
 export const CaseGenerator = () => {
+  const navigate = useNavigate();
   const [state, setState] = useState<CaseGeneratorState>({
     selectedDomain: null,
     selectedCategories: [],
@@ -152,6 +154,13 @@ export const CaseGenerator = () => {
 
   return (
     <div className="case-generator">
+      <button
+        className="btn-back-to-dashboard"
+        onClick={() => navigate('/dashboard')}
+        title="Înapoi la Dashboard"
+      >
+        ← Înapoi la Dashboard
+      </button>
       <header className="case-generator-header">
         <h1>🤖 Generator de Cazuri Juridice</h1>
         <p className="subtitle">Generare automată de cazuri practice cu AI</p>
