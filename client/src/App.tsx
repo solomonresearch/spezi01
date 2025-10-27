@@ -4,6 +4,7 @@ import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
 import { Dashboard } from './components/Dashboard';
 import { AdminPanel } from './components/AdminPanel';
+import { Reporting } from './components/Reporting';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
@@ -28,6 +29,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reporting"
+            element={
+              <ProtectedRoute>
+                <Reporting />
               </ProtectedRoute>
             }
           />

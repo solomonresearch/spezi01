@@ -280,6 +280,9 @@ Concluzia:
           <span className="beta-badge">Beta v0.1</span>
         </div>
         <div className="user-menu">
+          <button onClick={() => navigate('/reporting')} className="btn-reporting" title="My Progress">
+            Progress
+          </button>
           {profile?.is_admin && (
             <button onClick={() => navigate('/admin')} className="btn-admin" title="Admin Panel">
               Admin
