@@ -8,6 +8,7 @@
     "preview": "cd client && npm run preview"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.67.0",
     "@supabase/supabase-js": "^2.76.1",
     "csv-parse": "^6.1.0",
     "pg": "^8.16.3",
