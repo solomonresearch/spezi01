@@ -5,6 +5,7 @@ import { SignUp } from './components/SignUp';
 import { Dashboard } from './components/Dashboard';
 import { AdminPanel } from './components/AdminPanel';
 import { Reporting } from './components/Reporting';
+import { CaseGenerator } from './components/CaseGenerator';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
@@ -37,6 +38,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Reporting />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/case-generator"
+            element={
+              <ProtectedRoute>
+                <CaseGenerator />
               </ProtectedRoute>
             }
           />

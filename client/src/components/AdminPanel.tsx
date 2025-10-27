@@ -72,6 +72,33 @@ export const AdminPanel = () => {
           <span className="admin-title">Admin Panel</span>
         </div>
         <div className="admin-nav">
+          <button
+            onClick={() => navigate('/case-generator')}
+            className="btn-case-generator"
+            style={{
+              background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '10px 20px',
+              borderRadius: '6px',
+              fontSize: '15px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              marginRight: '12px',
+              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(5, 150, 105, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)';
+            }}
+          >
+            🤖 GENERATOR DE CAZURI
+          </button>
           <button onClick={() => navigate('/dashboard')} className="btn-back">
             Back to Dashboard
           </button>
