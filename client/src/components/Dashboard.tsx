@@ -5,6 +5,7 @@ import { useCasesBySubcategory, useCase } from '../hooks/useCases';
 import { useChat } from '../hooks/useChat';
 import { useAssessment } from '../hooks/useAssessment';
 import { Logo } from './Logo';
+import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
 
@@ -13,28 +14,28 @@ const lawCategories = [
     id: 'civil',
     code: 'CIV',
     name: 'Drept Civil',
-    subcategories: [
-      'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
-      'Persoana fizică (Capacitatea de exercițiu)',
-      'Persoana juridică (Noțiune, Capacitate)',
-      'Persoana juridică (Funcționarea persoanei juridice)',
-      'Persoana fizică (Elemente de identificare. Starea civilă)',
-      'Persoana fizică (Ocrotirea incapabilului)',
-      'Exercitarea drepturilor subiective civile. Abuzul de drept',
-      'Apărarea drepturilor nepatrimoniale',
-      'Aplicarea legii civile în timp și spațiu I',
-      'Aplicarea legii civile în timp și spațiu II'
-    ]
+    categories: CIVIL_LAW_CATEGORIES.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      description: cat.description,
+      subcategories: cat.subcategories.map(subcat => `${cat.name} (${subcat})`)
+    })).concat([{
+      id: 'altele',
+      name: 'Altele',
+      description: 'Cazuri fără categorie specifică',
+      subcategories: ['Altele']
+    }])
   },
-  { id: 'constitutional', code: 'CON', name: 'Drept Constitutional', subcategories: [] },
-  { id: 'roman', code: 'ROM', name: 'Drept Roman', subcategories: [] }
+  { id: 'constitutional', code: 'CON', name: 'Drept Constitutional', categories: [] },
+  { id: 'roman', code: 'ROM', name: 'Drept Roman', categories: [] }
 ];
 
 export const Dashboard = () => {
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
-  const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoana fizică (Capacitatea de exercițiu)');
+  const [expandedCivilCategory, setExpandedCivilCategory] = useState<string | null>('persoane_fizice');
+  const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoane fizice (Capacitatea de exercițiu)');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
@@ -182,6 +183,10 @@ export const Dashboard = () => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
+  const toggleCivilCategory = (categoryId: string) => {
+    setExpandedCivilCategory(expandedCivilCategory === categoryId ? null : categoryId);
+  };
+
   const toggleSubcategory = (subcategory: string) => {
     setExpandedSubcategory(expandedSubcategory === subcategory ? null : subcategory);
   };
@@ -310,57 +315,77 @@ Concluzia:
                 ◀
               </button>
             </div>
-          {lawCategories.map((category) => (
-            <div key={category.id} className="category-section">
+          {lawCategories.map((domain) => (
+            <div key={domain.id} className="category-section">
               <button
-                className={`category-btn ${expandedCategory === category.id ? 'active' : ''}`}
-                onClick={() => toggleCategory(category.id)}
+                className={`category-btn ${expandedCategory === domain.id ? 'active' : ''}`}
+                onClick={() => toggleCategory(domain.id)}
               >
-                {category.name}
-                {category.subcategories.length > 0 && (
+                {domain.name}
+                {domain.categories && domain.categories.length > 0 && (
                   <span className="expand-icon">
-                    {expandedCategory === category.id ? '▼' : '▶'}
+                    {expandedCategory === domain.id ? '▼' : '▶'}
                   </span>
                 )}
               </button>
-              {expandedCategory === category.id && category.subcategories.length > 0 && (
-                <ul className="subcategory-list">
-                  {category.subcategories.map((sub, idx) => (
-                    <li key={idx} className="subcategory-wrapper">
+              {expandedCategory === domain.id && domain.categories && domain.categories.length > 0 && (
+                <ul className="category-list">
+                  {domain.categories.map((category) => (
+                    <li key={category.id} className="category-wrapper">
                       <button
-                        className={`subcategory-item ${expandedSubcategory === sub ? 'active' : ''}`}
-                        onClick={() => toggleSubcategory(sub)}
+                        className={`category-item ${expandedCivilCategory === category.id ? 'active' : ''}`}
+                        onClick={() => toggleCivilCategory(category.id)}
+                        title={category.description}
                       >
-                        {sub}
-                        {expandedSubcategory === sub && cases.length > 0 && (
+                        {category.name}
+                        {category.subcategories && category.subcategories.length > 0 && (
                           <span className="expand-icon-small">
-                            {expandedSubcategory === sub ? '▼' : '▶'}
+                            {expandedCivilCategory === category.id ? '▼' : '▶'}
                           </span>
                         )}
                       </button>
-                      {/* Show cases under selected subcategory */}
-                      {expandedSubcategory === sub && (
-                        <ul className="case-list">
-                          {casesLoading ? (
-                            <li className="case-item-loading">Se încarcă cazurile...</li>
-                          ) : cases.length === 0 ? (
-                            <li className="case-item-empty">Nu există cazuri</li>
-                          ) : (
-                            cases.map((caseItem) => (
-                              <li key={caseItem.id}>
-                                <button
-                                  className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''}`}
-                                  onClick={() => handleCaseClick(caseItem)}
-                                >
-                                  <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
-                                  {caseItem.verified && <span className="verified-badge" title="Verificat de profesionist">✓</span>}
-                                  <span className="case-title-short">
-                                    {caseItem.case_code}: {caseItem.title.replace(/^Caz \d+:\s*/i, '')}
+                      {expandedCivilCategory === category.id && category.subcategories && (
+                        <ul className="subcategory-list">
+                          {category.subcategories.map((sub, idx) => (
+                            <li key={idx} className="subcategory-wrapper">
+                              <button
+                                className={`subcategory-item ${expandedSubcategory === sub ? 'active' : ''}`}
+                                onClick={() => toggleSubcategory(sub)}
+                              >
+                                {sub.replace(category.name + ' (', '').replace(')', '')}
+                                {expandedSubcategory === sub && cases.length > 0 && (
+                                  <span className="expand-icon-smaller">
+                                    {expandedSubcategory === sub ? '▼' : '▶'}
                                   </span>
-                                </button>
-                              </li>
-                            ))
-                          )}
+                                )}
+                              </button>
+                              {/* Show cases under selected subcategory */}
+                              {expandedSubcategory === sub && (
+                                <ul className="case-list">
+                                  {casesLoading ? (
+                                    <li className="case-item-loading">Se încarcă cazurile...</li>
+                                  ) : cases.length === 0 ? (
+                                    <li className="case-item-empty">Nu există cazuri</li>
+                                  ) : (
+                                    cases.map((caseItem) => (
+                                      <li key={caseItem.id}>
+                                        <button
+                                          className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''}`}
+                                          onClick={() => handleCaseClick(caseItem)}
+                                        >
+                                          <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
+                                          {caseItem.verified && <span className="verified-badge" title="Verificat de profesionist">✓</span>}
+                                          <span className="case-title-short">
+                                            {caseItem.case_code}: {caseItem.title.replace(/^Caz \d+:\s*/i, '')}
+                                          </span>
+                                        </button>
+                                      </li>
+                                    ))
+                                  )}
+                                </ul>
+                              )}
+                            </li>
+                          ))}
                         </ul>
                       )}
                     </li>

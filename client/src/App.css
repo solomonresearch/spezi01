@@ -984,6 +984,48 @@ body {
 
 /* ==================== Case Display Styles ==================== */
 
+/* Category list (middle level - e.g., "Persoane fizice") */
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f8f9fa;
+}
+
+.category-wrapper {
+  list-style: none;
+}
+
+.category-item {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 15px 10px 24px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: #444;
+  font-weight: 500;
+  transition: background-color 0.2s, color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 2px solid transparent;
+}
+
+.category-item:hover {
+  background-color: #e8eef5;
+  color: #667eea;
+  border-left-color: #667eea;
+}
+
+.category-item.active {
+  background-color: #dfe6f0;
+  color: #667eea;
+  font-weight: 600;
+  border-left-color: #667eea;
+}
+
 /* Subcategory wrapper and expansion */
 .subcategory-wrapper {
   list-style: none;
@@ -994,31 +1036,40 @@ body {
   text-align: left;
   background: none;
   border: none;
-  padding: 10px 15px;
+  padding: 9px 15px 9px 40px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12.5px;
   color: #555;
   transition: background-color 0.2s, color 0.2s;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-left: 2px solid transparent;
 }
 
 .subcategory-item:hover {
   background-color: #f0f4f8;
   color: #667eea;
+  border-left-color: #a0b5ff;
 }
 
 .subcategory-item.active {
   background-color: #e8eef5;
   color: #667eea;
   font-weight: 500;
+  border-left-color: #667eea;
 }
 
 .expand-icon-small {
   font-size: 10px;
   margin-left: 5px;
   color: #999;
+}
+
+.expand-icon-smaller {
+  font-size: 9px;
+  margin-left: 4px;
+  color: #aaa;
 }
 
 /* Case list */
