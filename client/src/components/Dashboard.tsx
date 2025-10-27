@@ -6,6 +6,7 @@ import { useChat } from '../hooks/useChat';
 import { useAssessment } from '../hooks/useAssessment';
 import { Logo } from './Logo';
 import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
+import { CONSTITUTIONAL_LAW_CATEGORIES } from '../constants/constitutionalLawCategories';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
 
@@ -40,7 +41,22 @@ const lawCategories: LawDomain[] = [
       subcategories: ['Altele']
     }])
   },
-  { id: 'constitutional', code: 'CON', name: 'Drept Constitutional', categories: [] },
+  {
+    id: 'constitutional',
+    code: 'CON',
+    name: 'Drept Constitutional',
+    categories: CONSTITUTIONAL_LAW_CATEGORIES.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      description: cat.description,
+      subcategories: cat.subcategories.map(subcat => `${cat.name} (${subcat})`)
+    })).concat([{
+      id: 'altele_constitutional',
+      name: 'Altele',
+      description: 'Cazuri fără categorie specifică',
+      subcategories: ['Altele']
+    }])
+  },
   { id: 'roman', code: 'ROM', name: 'Drept Roman', categories: [] }
 ];
 
@@ -49,6 +65,7 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [expandedCivilCategory, setExpandedCivilCategory] = useState<string | null>('persoane_fizice');
+  const [expandedConstitutionalCategory, setExpandedConstitutionalCategory] = useState<string | null>(null);
   const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoane fizice (Capacitatea de exercițiu)');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showHints, setShowHints] = useState(false);
@@ -210,6 +227,10 @@ export const Dashboard = () => {
 
   const toggleCivilCategory = (categoryId: string) => {
     setExpandedCivilCategory(expandedCivilCategory === categoryId ? null : categoryId);
+  };
+
+  const toggleConstitutionalCategory = (categoryId: string) => {
+    setExpandedConstitutionalCategory(expandedConstitutionalCategory === categoryId ? null : categoryId);
   };
 
   const toggleSubcategory = (subcategory: string) => {
@@ -387,21 +408,29 @@ Concluzia:
 
               {expandedCategory === domain.id && domain.categories && domain.categories.length > 0 && (
                 <ul className="category-list">
-                  {domain.categories.map((category) => (
+                  {domain.categories.map((category) => {
+                    const isExpanded = domain.id === 'civil'
+                      ? expandedCivilCategory === category.id
+                      : expandedConstitutionalCategory === category.id;
+                    const toggleFunc = domain.id === 'civil'
+                      ? toggleCivilCategory
+                      : toggleConstitutionalCategory;
+
+                    return (
                     <li key={category.id} className="category-wrapper">
                       <button
-                        className={`category-item ${expandedCivilCategory === category.id ? 'active' : ''}`}
-                        onClick={() => toggleCivilCategory(category.id)}
+                        className={`category-item ${isExpanded ? 'active' : ''}`}
+                        onClick={() => toggleFunc(category.id)}
                         title={category.description}
                       >
                         {category.name}
                         {category.subcategories && category.subcategories.length > 0 && (
                           <span className="expand-icon-small">
-                            {expandedCivilCategory === category.id ? '▼' : '▶'}
+                            {isExpanded ? '▼' : '▶'}
                           </span>
                         )}
                       </button>
-                      {expandedCivilCategory === category.id && category.subcategories && (
+                      {isExpanded && category.subcategories && (
                         <ul className="subcategory-list">
                           {category.subcategories.map((sub, idx) => (
                             <li key={idx} className="subcategory-wrapper">
@@ -448,7 +477,8 @@ Concluzia:
                         </ul>
                       )}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
             </div>
