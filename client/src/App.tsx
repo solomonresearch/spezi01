@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { SignUp } from './components/SignUp';
 import { Dashboard } from './components/Dashboard';
+import { AdminPanel } from './components/AdminPanel';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
@@ -19,6 +20,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             }
           />

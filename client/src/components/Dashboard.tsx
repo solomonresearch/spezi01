@@ -30,7 +30,7 @@ const lawCategories = [
 ];
 
 export const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoana fizică (Capacitatea de exercițiu)');
@@ -276,6 +276,11 @@ Concluzia:
       <header className="app-header">
         <h1 className="app-title">Spezi</h1>
         <div className="user-menu">
+          {profile?.is_admin && (
+            <button onClick={() => navigate('/admin')} className="btn-admin" title="Admin Panel">
+              Admin
+            </button>
+          )}
           <span className="user-email">{user?.email}</span>
           <button onClick={handleSignOut} className="btn-signout">Sign Out</button>
         </div>

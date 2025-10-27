@@ -11,9 +11,18 @@ interface UserProfile {
   university_name: string;
 }
 
+interface DBUserProfile {
+  id: string;
+  email: string;
+  name: string;
+  username: string;
+  is_admin: boolean;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: DBUserProfile | null;
   loading: boolean;
   signUp: (email: string, password: string, profile: UserProfile) => Promise<{ error: AuthError | Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
@@ -37,22 +46,53 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<DBUserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Fetch user profile from database
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('id, email, name, username, is_admin')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+
+    return data as DBUserProfile;
+  };
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        const userProfile = await fetchProfile(session.user.id);
+        setProfile(userProfile);
+      }
+
       setLoading(false);
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      if (session?.user) {
+        const userProfile = await fetchProfile(session.user.id);
+        setProfile(userProfile);
+      } else {
+        setProfile(null);
+      }
+
       setLoading(false);
     });
 
@@ -116,6 +156,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value = {
     user,
     session,
+    profile,
     loading,
     signUp,
     signIn,
