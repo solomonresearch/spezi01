@@ -984,6 +984,87 @@ body {
 
 /* ==================== Case Display Styles ==================== */
 
+/* Search and Filter Section */
+.search-filter-section {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.search-input-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 2px solid #e1e8ed;
+  border-radius: 6px;
+  font-size: 13px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-size: 12px;
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.clear-search-btn:hover {
+  color: #667eea;
+}
+
+.selected-cases-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #e8eef5;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.selected-count {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.clear-selection-btn {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-weight: 500;
+}
+
+.clear-selection-btn:hover {
+  background: #d0daf0;
+}
+
 /* Category list (middle level - e.g., "Persoane fizice") */
 .category-list {
   list-style: none;
@@ -1079,6 +1160,27 @@ body {
   margin-top: 5px;
 }
 
+.case-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.case-checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #667eea;
+  margin: 0;
+}
+
+.case-checkbox:hover {
+  transform: scale(1.1);
+}
+
 .case-item-loading,
 .case-item-empty {
   padding: 8px 10px;
@@ -1088,7 +1190,7 @@ body {
 }
 
 .case-item-btn {
-  width: 100%;
+  flex: 1;
   text-align: left;
   background: none;
   border: none;
@@ -1101,6 +1203,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  border-radius: 4px;
 }
 
 .case-item-btn:hover {
@@ -1114,6 +1217,12 @@ body {
   border-left-color: #667eea;
   color: #667eea;
   font-weight: 500;
+}
+
+.case-item-btn.selected {
+  background-color: #f0f4ff;
+  border-left-color: #667eea;
+  box-shadow: 0 0 0 2px #e0e8ff;
 }
 
 .case-difficulty {
