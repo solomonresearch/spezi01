@@ -71,7 +71,7 @@ const mockSubmissions = [
 export const Reporting = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [conversationsExpanded, setConversationsExpanded] = useState(false);
+  const [expandedConvs, setExpandedConvs] = useState<Set<number>>(new Set());
 
   const completedCases = mockCasesProgress.filter(c => c.status === 'completed').length;
   const inProgressCases = mockCasesProgress.filter(c => c.status === 'in_progress').length;
@@ -79,6 +79,16 @@ export const Reporting = () => {
   const averageScore = mockSubmissions.length > 0
     ? (mockSubmissions.reduce((sum, s) => sum + parseInt(s.score.split('/')[0]), 0) / mockSubmissions.length).toFixed(1)
     : 'N/A';
+
+  const toggleConversation = (idx: number) => {
+    const newExpanded = new Set(expandedConvs);
+    if (newExpanded.has(idx)) {
+      newExpanded.delete(idx);
+    } else {
+      newExpanded.add(idx);
+    }
+    setExpandedConvs(newExpanded);
+  };
 
   return (
     <div className="reporting-container">
@@ -140,23 +150,23 @@ export const Reporting = () => {
               </div>
             </section>
 
-            {/* AI Conversations - Expandable */}
+            {/* AI Conversations - Each expandable */}
             <section className="reporting-section scrollable">
-              <div
-                className="section-header-compact expandable"
-                onClick={() => setConversationsExpanded(!conversationsExpanded)}
-              >
+              <div className="section-header-compact">
                 <h3>💬 AI Conversations</h3>
-                <span className="expand-icon">{conversationsExpanded ? '▼' : '▶'}</span>
               </div>
-              {conversationsExpanded && (
-                <div className="section-content">
-                  {mockConversations.map((conv, idx) => (
-                    <div key={idx} className="conversation-compact">
-                      <div className="conv-compact-header">
-                        <span className="conv-code">{conv.caseCode}</span>
-                      </div>
-                      <div className="conv-compact-title">{conv.caseTitle}</div>
+              <div className="section-content">
+                {mockConversations.map((conv, idx) => (
+                  <div key={idx} className="conversation-compact">
+                    <div
+                      className="conv-compact-header expandable"
+                      onClick={() => toggleConversation(idx)}
+                    >
+                      <span className="conv-code">{conv.caseCode}</span>
+                      <span className="expand-icon">{expandedConvs.has(idx) ? '▼' : '▶'}</span>
+                    </div>
+                    <div className="conv-compact-title">{conv.caseTitle}</div>
+                    {expandedConvs.has(idx) && (
                       <div className="messages-compact">
                         {conv.messages.map((msg, msgIdx) => (
                           <div key={msgIdx} className={`msg-compact ${msg.role}`}>
@@ -168,10 +178,10 @@ export const Reporting = () => {
                           </div>
                         ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    )}
+                  </div>
+                ))}
+              </div>
             </section>
           </div>
 

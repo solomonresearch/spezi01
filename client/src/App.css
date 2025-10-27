@@ -2104,6 +2104,18 @@ body {
   background: #f9fafb;
   padding: 8px 10px;
   border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conv-compact-header.expandable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.conv-compact-header.expandable:hover {
+  background: #f3f4f6;
 }
 
 .conv-code {
