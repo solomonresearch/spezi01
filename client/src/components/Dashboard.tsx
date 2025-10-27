@@ -64,7 +64,10 @@ export const Dashboard = () => {
     error: assessmentError,
     assessSolution: submitAssessment,
     reset: resetAssessment
-  } = useAssessment();
+  } = useAssessment({
+    userId: user?.id,
+    caseId: selectedCaseId || undefined
+  });
 
   // Load cases from Supabase by subcategory
   const { cases, loading: casesLoading } = useCasesBySubcategory(expandedSubcategory);
