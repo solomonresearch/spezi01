@@ -9,7 +9,21 @@ import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
 
-const lawCategories = [
+interface CivilCategory {
+  id: string;
+  name: string;
+  description: string;
+  subcategories: string[];
+}
+
+interface LawDomain {
+  id: string;
+  code: string;
+  name: string;
+  categories: CivilCategory[];
+}
+
+const lawCategories: LawDomain[] = [
   {
     id: 'civil',
     code: 'CIV',
@@ -235,10 +249,10 @@ export const Dashboard = () => {
     return text.toLowerCase().includes(searchQuery.toLowerCase());
   };
 
-  const filterCategories = (domain: any) => {
+  const filterCategories = (domain: LawDomain): CivilCategory[] => {
     if (!searchQuery.trim()) return domain.categories;
 
-    return domain.categories.filter((category: any) => {
+    return domain.categories.filter((category: CivilCategory) => {
       // Check if category name matches
       if (matchesSearch(category.name)) return true;
 
@@ -247,7 +261,7 @@ export const Dashboard = () => {
     });
   };
 
-  const filterSubcategories = (category: any) => {
+  const filterSubcategories = (category: CivilCategory): string[] => {
     if (!searchQuery.trim()) return category.subcategories;
 
     return category.subcategories.filter((sub: string) => matchesSearch(sub));
