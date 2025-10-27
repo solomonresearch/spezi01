@@ -1,94 +1,185 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { Logo } from './Logo';
 
-// Mock data for demonstration
-const mockCasesProgress = [
-  {
-    id: '1',
-    caseCode: 'CIV-001',
-    title: 'Capacitatea de exercițiu - Cazul minorului',
-    status: 'completed',
-    solvedAt: '2025-10-20',
-  },
-  {
-    id: '2',
-    caseCode: 'CIV-002',
-    title: 'Persoana juridică - Înființare asociație',
-    status: 'in_progress',
-    solvedAt: null,
-  },
-  {
-    id: '3',
-    caseCode: 'CIV-003',
-    title: 'Capacitatea de folosință',
-    status: 'completed',
-    solvedAt: '2025-10-25',
-  },
-];
+interface Submission {
+  id: string;
+  case_code: string;
+  case_title: string;
+  submitted_at: string;
+  difficulty_rating: number;
+  feedback_text: string;
+  score: string;
+  score_value: number;
+  status: string;
+}
 
-const mockConversations = [
-  {
-    caseCode: 'CIV-001',
-    caseTitle: 'Capacitatea de exercițiu - Cazul minorului',
-    messages: [
-      { role: 'user', content: 'Care sunt regulile privind capacitatea de exercițiu a minorilor?', timestamp: '2025-10-20 10:15' },
-      { role: 'assistant', content: 'Conform art. 38-41 din Codul Civil, minorii au capacitate de exercițiu restrânsă până la vârsta de 14 ani...', timestamp: '2025-10-20 10:15' },
-      { role: 'user', content: 'Și după 14 ani?', timestamp: '2025-10-20 10:17' },
-      { role: 'assistant', content: 'După împlinirea vârstei de 14 ani, minorul are capacitate de exercițiu restrânsă și poate încheia singur actele juridice...', timestamp: '2025-10-20 10:17' },
-    ],
-  },
-  {
-    caseCode: 'CIV-003',
-    caseTitle: 'Capacitatea de folosință',
-    messages: [
-      { role: 'user', content: 'Poate o persoană pierde capacitatea de folosință?', timestamp: '2025-10-25 14:30' },
-      { role: 'assistant', content: 'Nu, capacitatea de folosință este caracterizată prin inalienabilitate și imprescriptibilitate...', timestamp: '2025-10-25 14:30' },
-    ],
-  },
-];
+interface Conversation {
+  id: string;
+  case_code: string | null;
+  case_title: string | null;
+  conversation_data: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string;
+  }>;
+  message_count: number;
+  last_message_at: string;
+}
 
-const mockSubmissions = [
-  {
-    caseCode: 'CIV-001',
-    caseTitle: 'Capacitatea de exercițiu - Cazul minorului',
-    submittedAt: '2025-10-20 11:00',
-    difficulty: 3,
-    feedback: 'Excelent! Ați identificat corect toate problemele juridice și ați aplicat corespunzător articolele din Codul Civil. Structura răspunsului este clară și argumentată.',
-    score: '9/10',
-  },
-  {
-    caseCode: 'CIV-003',
-    caseTitle: 'Capacitatea de folosință',
-    submittedAt: '2025-10-25 15:45',
-    difficulty: 5,
-    feedback: 'Bună încercare, dar analiza ar putea fi mai aprofundată. Recomandăm să includeți mai multe referințe la doctrină și jurisprudență.',
-    score: '7/10',
-  },
-];
+interface CaseProgress {
+  id: string;
+  case_code: string;
+  title: string;
+  status: 'completed' | 'in_progress';
+  solved_at: string | null;
+}
 
 export const Reporting = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [expandedConvs, setExpandedConvs] = useState<Set<number>>(new Set());
 
-  // A case is completed if it has a submission with score > 50/100
-  const completedCases = mockSubmissions.filter(sub => {
-    const score = parseInt(sub.score.split('/')[0]);
-    const total = parseInt(sub.score.split('/')[1]);
-    return (score / total) > 0.5;
+  // State for real data
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [casesProgress, setCasesProgress] = useState<CaseProgress[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch submissions from Supabase
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('submissions_with_details')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('submitted_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching submissions:', error);
+      } else if (data) {
+        setSubmissions(data as Submission[]);
+      }
+    };
+
+    fetchSubmissions();
+  }, [user?.id]);
+
+  // Fetch conversations from Supabase
+  useEffect(() => {
+    const fetchConversations = async () => {
+      if (!user?.id) return;
+
+      const { data, error } = await supabase
+        .from('chat_conversations')
+        .select(`
+          id,
+          case_id,
+          conversation_data,
+          message_count,
+          last_message_at,
+          cases:case_id (
+            case_code,
+            title
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('last_message_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching conversations:', error);
+      } else if (data) {
+        const formattedConversations: Conversation[] = data.map((conv: any) => ({
+          id: conv.id,
+          case_code: conv.cases?.case_code || null,
+          case_title: conv.cases?.title || 'General Conversation',
+          conversation_data: conv.conversation_data,
+          message_count: conv.message_count,
+          last_message_at: conv.last_message_at
+        }));
+        setConversations(formattedConversations);
+      }
+    };
+
+    fetchConversations();
+  }, [user?.id]);
+
+  // Fetch cases progress
+  useEffect(() => {
+    const fetchCasesProgress = async () => {
+      if (!user?.id) return;
+
+      // Get all cases that have submissions
+      const { data: submissionData, error } = await supabase
+        .from('case_submissions')
+        .select(`
+          case_id,
+          score_value,
+          submitted_at,
+          cases:case_id (
+            id,
+            case_code,
+            title
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('submitted_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching cases progress:', error);
+      } else if (submissionData) {
+        // Group by case and determine status
+        const casesMap = new Map<string, CaseProgress>();
+
+        submissionData.forEach((sub: any) => {
+          if (!sub.cases) return;
+
+          const caseId = sub.cases.id;
+          const isPassed = sub.score_value && sub.score_value > 50;
+
+          if (!casesMap.has(caseId)) {
+            casesMap.set(caseId, {
+              id: caseId,
+              case_code: sub.cases.case_code,
+              title: sub.cases.title,
+              status: isPassed ? 'completed' : 'in_progress',
+              solved_at: isPassed ? sub.submitted_at : null
+            });
+          } else {
+            // Update status if this submission passed
+            const existing = casesMap.get(caseId)!;
+            if (isPassed && existing.status === 'in_progress') {
+              existing.status = 'completed';
+              existing.solved_at = sub.submitted_at;
+            }
+          }
+        });
+
+        setCasesProgress(Array.from(casesMap.values()));
+      }
+
+      setLoading(false);
+    };
+
+    fetchCasesProgress();
+  }, [user?.id]);
+
+  // Calculate stats from real data
+  const completedCases = submissions.filter(sub => {
+    return sub.score_value && sub.score_value > 50;
   }).length;
 
-  const totalSubmissions = mockSubmissions.length;
+  const totalSubmissions = submissions.length;
 
   // Average score across all submissions
-  const averageScore = mockSubmissions.length > 0
-    ? (mockSubmissions.reduce((sum, s) => {
-        const score = parseInt(s.score.split('/')[0]);
-        const total = parseInt(s.score.split('/')[1]);
-        return sum + (score / total) * 100;
-      }, 0) / mockSubmissions.length).toFixed(1)
+  const averageScore = submissions.length > 0
+    ? (submissions.reduce((sum, s) => {
+        return sum + (s.score_value || 0);
+      }, 0) / submissions.length).toFixed(1)
     : 'N/A';
 
   const toggleConversation = (idx: number) => {
@@ -143,17 +234,29 @@ export const Reporting = () => {
                 <h3>📄 Submitted Solutions</h3>
               </div>
               <div className="section-content">
-                {mockSubmissions.map((sub, idx) => (
-                  <div key={idx} className="submission-compact">
-                    <div className="submission-compact-header">
-                      <span className="sub-code">{sub.caseCode}</span>
-                      <span className="score-compact">{sub.score}</span>
+                {loading ? (
+                  <div className="loading-message">Se încarcă soluțiile...</div>
+                ) : submissions.length === 0 ? (
+                  <div className="empty-message">Nu ai soluții trimise încă</div>
+                ) : (
+                  submissions.map((sub) => (
+                    <div key={sub.id} className="submission-compact">
+                      <div className="submission-compact-header">
+                        <span className="sub-code">{sub.case_code}</span>
+                        <span className="score-compact">{sub.score || 'În curs'}</span>
+                      </div>
+                      <div className="submission-compact-date">
+                        {new Date(sub.submitted_at).toLocaleString('ro-RO')}
+                      </div>
+                      <div className="submission-compact-title">{sub.case_title}</div>
+                      <div className="feedback-compact">
+                        {sub.feedback_text
+                          ? sub.feedback_text.substring(0, 150) + (sub.feedback_text.length > 150 ? '...' : '')
+                          : 'Așteptăm evaluarea...'}
+                      </div>
                     </div>
-                    <div className="submission-compact-date">{sub.submittedAt}</div>
-                    <div className="submission-compact-title">{sub.caseTitle}</div>
-                    <div className="feedback-compact">{sub.feedback}</div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
 
@@ -163,31 +266,44 @@ export const Reporting = () => {
                 <h3>💬 AI Conversations</h3>
               </div>
               <div className="section-content">
-                {mockConversations.map((conv, idx) => (
-                  <div key={idx} className="conversation-compact">
-                    <div
-                      className="conv-compact-header expandable"
-                      onClick={() => toggleConversation(idx)}
-                    >
-                      <span className="conv-code">{conv.caseCode}</span>
-                      <span className="expand-icon">{expandedConvs.has(idx) ? '▼' : '▶'}</span>
-                    </div>
-                    <div className="conv-compact-title">{conv.caseTitle}</div>
-                    {expandedConvs.has(idx) && (
-                      <div className="messages-compact">
-                        {conv.messages.map((msg, msgIdx) => (
-                          <div key={msgIdx} className={`msg-compact ${msg.role}`}>
-                            <div className="msg-compact-meta">
-                              <span>{msg.role === 'user' ? '👤' : '🤖'}</span>
-                              <span className="msg-time">{msg.timestamp}</span>
-                            </div>
-                            <div className="msg-compact-content">{msg.content}</div>
-                          </div>
-                        ))}
+                {loading ? (
+                  <div className="loading-message">Se încarcă conversațiile...</div>
+                ) : conversations.length === 0 ? (
+                  <div className="empty-message">Nu ai conversații încă</div>
+                ) : (
+                  conversations.map((conv, idx) => (
+                    <div key={conv.id} className="conversation-compact">
+                      <div
+                        className="conv-compact-header expandable"
+                        onClick={() => toggleConversation(idx)}
+                      >
+                        <span className="conv-code">{conv.case_code || 'General'}</span>
+                        <span className="expand-icon">{expandedConvs.has(idx) ? '▼' : '▶'}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      <div className="conv-compact-title">{conv.case_title}</div>
+                      {expandedConvs.has(idx) && (
+                        <div className="messages-compact">
+                          {conv.conversation_data.map((msg, msgIdx) => (
+                            <div key={msgIdx} className={`msg-compact ${msg.role}`}>
+                              <div className="msg-compact-meta">
+                                <span>{msg.role === 'user' ? '👤' : '🤖'}</span>
+                                <span className="msg-time">
+                                  {new Date(msg.timestamp).toLocaleString('ro-RO', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <div className="msg-compact-content">{msg.content}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </section>
           </div>
@@ -199,39 +315,72 @@ export const Reporting = () => {
                 <h3>📚 Cases Overview</h3>
               </div>
               <div className="section-content">
-                {/* Group by date */}
-                <div className="date-divider">2025-10-25</div>
-                {mockCasesProgress.filter(c => c.solvedAt === '2025-10-25').map((caseItem) => (
-                  <div key={caseItem.id} className="case-compact">
-                    <div className="case-compact-code">{caseItem.caseCode}</div>
-                    <div className="case-compact-title">{caseItem.title}</div>
-                    <div className={`case-compact-status ${caseItem.status}`}>
-                      {caseItem.status === 'completed' ? '✓' : '⏳'}
-                    </div>
-                  </div>
-                ))}
+                {loading ? (
+                  <div className="loading-message">Se încarcă cazurile...</div>
+                ) : casesProgress.length === 0 ? (
+                  <div className="empty-message">Nu ai început încă niciun caz</div>
+                ) : (
+                  <>
+                    {/* Group cases by date */}
+                    {(() => {
+                      // Group by date
+                      const byDate = new Map<string, CaseProgress[]>();
+                      const inProgress: CaseProgress[] = [];
 
-                <div className="date-divider">2025-10-20</div>
-                {mockCasesProgress.filter(c => c.solvedAt === '2025-10-20').map((caseItem) => (
-                  <div key={caseItem.id} className="case-compact">
-                    <div className="case-compact-code">{caseItem.caseCode}</div>
-                    <div className="case-compact-title">{caseItem.title}</div>
-                    <div className={`case-compact-status ${caseItem.status}`}>
-                      {caseItem.status === 'completed' ? '✓' : '⏳'}
-                    </div>
-                  </div>
-                ))}
+                      casesProgress.forEach(caseItem => {
+                        if (caseItem.status === 'completed' && caseItem.solved_at) {
+                          const date = new Date(caseItem.solved_at).toLocaleDateString('ro-RO');
+                          if (!byDate.has(date)) {
+                            byDate.set(date, []);
+                          }
+                          byDate.get(date)!.push(caseItem);
+                        } else {
+                          inProgress.push(caseItem);
+                        }
+                      });
 
-                <div className="date-divider">In Progress</div>
-                {mockCasesProgress.filter(c => !c.solvedAt).map((caseItem) => (
-                  <div key={caseItem.id} className="case-compact">
-                    <div className="case-compact-code">{caseItem.caseCode}</div>
-                    <div className="case-compact-title">{caseItem.title}</div>
-                    <div className={`case-compact-status ${caseItem.status}`}>
-                      {caseItem.status === 'completed' ? '✓' : '⏳'}
-                    </div>
-                  </div>
-                ))}
+                      // Sort dates descending
+                      const sortedDates = Array.from(byDate.keys()).sort((a, b) => {
+                        return new Date(b.split('.').reverse().join('-')).getTime() -
+                               new Date(a.split('.').reverse().join('-')).getTime();
+                      });
+
+                      return (
+                        <>
+                          {sortedDates.map(date => (
+                            <div key={date}>
+                              <div className="date-divider">{date}</div>
+                              {byDate.get(date)!.map((caseItem) => (
+                                <div key={caseItem.id} className="case-compact">
+                                  <div className="case-compact-code">{caseItem.case_code}</div>
+                                  <div className="case-compact-title">{caseItem.title}</div>
+                                  <div className={`case-compact-status ${caseItem.status}`}>
+                                    {caseItem.status === 'completed' ? '✓' : '⏳'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+
+                          {inProgress.length > 0 && (
+                            <div>
+                              <div className="date-divider">In Progress</div>
+                              {inProgress.map((caseItem) => (
+                                <div key={caseItem.id} className="case-compact">
+                                  <div className="case-compact-code">{caseItem.case_code}</div>
+                                  <div className="case-compact-title">{caseItem.title}</div>
+                                  <div className={`case-compact-status ${caseItem.status}`}>
+                                    {caseItem.status === 'completed' ? '✓' : '⏳'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
             </section>
           </div>
