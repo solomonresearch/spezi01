@@ -52,49 +52,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Fetch user profile from database
   const fetchProfile = async (userId: string): Promise<DBUserProfile | null> => {
     try {
-      console.log('Fetching profile for user:', userId);
-
-      // Create a timeout promise
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Profile fetch timeout after 3 seconds')), 3000);
-      });
-
-      // Race between fetch and timeout
-      const fetchPromise = supabase
+      const { data, error } = await supabase
         .from('user_profiles')
         .select('id, email, name, username, is_admin')
         .eq('id', userId)
         .single();
 
-      const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
       if (error) {
         console.error('Error fetching profile:', error);
-        console.error('Error details:', error.message, error.code);
         return null;
       }
 
-      console.log('Profile fetched successfully:', data);
       return data as DBUserProfile;
     } catch (error) {
       console.error('Exception while fetching profile:', error);
-      // Return null so the app can still load
       return null;
     }
   };
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-
-      if (session?.user) {
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
-      }
-
       setLoading(false);
+
+      // Fetch profile in background (non-blocking)
+      if (session?.user) {
+        fetchProfile(session.user.id).then(setProfile);
+      }
     }).catch((error) => {
       console.error('Error getting initial session:', error);
       setLoading(false);
@@ -103,18 +89,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
+      // Fetch profile in background (non-blocking)
       if (session?.user) {
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
+        fetchProfile(session.user.id).then(setProfile);
       } else {
         setProfile(null);
       }
-
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
