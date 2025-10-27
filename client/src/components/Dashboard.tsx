@@ -83,7 +83,11 @@ export const Dashboard = () => {
   } : undefined;
 
   // AI Chat hook
-  const { messages, isLoading: chatLoading, error: chatError, sendMessage } = useChat(selectedCaseId, chatContext);
+  const { messages, isLoading: chatLoading, error: chatError, sendMessage } = useChat({
+    caseId: selectedCaseId,
+    userId: user?.id,
+    caseContext: chatContext
+  });
   const [chatInput, setChatInput] = useState('');
   const chatMessagesEndRef = useRef<HTMLDivElement>(null);
 
