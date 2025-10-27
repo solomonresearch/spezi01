@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { Logo } from './Logo';
 
 interface UserProfile {
   id: string;
@@ -65,7 +66,11 @@ export const AdminPanel = () => {
   return (
     <div className="admin-container">
       <header className="admin-header">
-        <h1>Admin Panel</h1>
+        <div className="header-left">
+          <Logo />
+          <span className="beta-badge">Beta v0.1</span>
+          <span className="admin-title">Admin Panel</span>
+        </div>
         <div className="admin-nav">
           <button onClick={() => navigate('/dashboard')} className="btn-back">
             Back to Dashboard

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCasesBySubcategory, useCase } from '../hooks/useCases';
 import { useChat } from '../hooks/useChat';
 import { useAssessment } from '../hooks/useAssessment';
+import { Logo } from './Logo';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
 
@@ -274,7 +275,10 @@ Concluzia:
     <div className="app-container">
       {/* Compact Header */}
       <header className="app-header">
-        <h1 className="app-title">Spezi</h1>
+        <div className="header-left">
+          <Logo />
+          <span className="beta-badge">Beta v0.1</span>
+        </div>
         <div className="user-menu">
           {profile?.is_admin && (
             <button onClick={() => navigate('/admin')} className="btn-admin" title="Admin Panel">

@@ -337,6 +337,30 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-left svg {
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.beta-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .app-title {
   color: white;
   font-size: 24px;
@@ -1645,8 +1669,8 @@ body {
 }
 
 .admin-header {
-  background: white;
-  padding: 20px 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 12px 24px;
   border-radius: 12px;
   margin-bottom: 20px;
   display: flex;
@@ -1657,8 +1681,20 @@ body {
 
 .admin-header h1 {
   font-size: 28px;
-  color: #333;
+  color: white;
   margin: 0;
+}
+
+.admin-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.admin-header svg {
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .admin-nav {
