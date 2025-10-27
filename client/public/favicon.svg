@@ -1,0 +1,20 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Scales of justice icon in purple gradient -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Base -->
+  <rect x="10" y="26" width="12" height="2" fill="url(#grad)" />
+  <!-- Stand -->
+  <rect x="15" y="6" width="2" height="20" fill="url(#grad)" />
+  <!-- Beam -->
+  <rect x="8" y="6" width="16" height="2" fill="url(#grad)" />
+  <!-- Left scale -->
+  <path d="M8 6 L8 10 L4 10 L4 12 L12 12 L12 10 L8 10 Z" fill="url(#grad)" opacity="0.7" />
+  <!-- Right scale -->
+  <path d="M24 6 L24 10 L20 10 L20 12 L28 12 L28 10 L24 10 Z" fill="url(#grad)" opacity="0.7" />
+</svg>
