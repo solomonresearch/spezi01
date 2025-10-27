@@ -70,6 +70,7 @@ const mockSubmissions = [
 export const Reporting = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [conversationsExpanded, setConversationsExpanded] = useState(false);
 
   const completedCases = mockCasesProgress.filter(c => c.status === 'completed').length;
   const inProgressCases = mockCasesProgress.filter(c => c.status === 'in_progress').length;
@@ -94,113 +95,129 @@ export const Reporting = () => {
       </header>
 
       <div className="reporting-content">
-        {/* Overview Stats */}
-        <section className="reporting-section stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">✅</div>
-            <div className="stat-value">{completedCases}</div>
-            <div className="stat-label">Cases Completed</div>
+        {/* Compact Stats */}
+        <div className="stats-compact">
+          <div className="stat-compact">
+            <span className="stat-compact-value">{completedCases}</span>
+            <span className="stat-compact-label">Completed</span>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">📝</div>
-            <div className="stat-value">{inProgressCases}</div>
-            <div className="stat-label">In Progress</div>
+          <div className="stat-compact">
+            <span className="stat-compact-value">{inProgressCases}</span>
+            <span className="stat-compact-label">In Progress</span>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-value">{totalSubmissions}</div>
-            <div className="stat-label">Submissions</div>
+          <div className="stat-compact">
+            <span className="stat-compact-value">{totalSubmissions}</span>
+            <span className="stat-compact-label">Submissions</span>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-value">{averageScore}</div>
-            <div className="stat-label">Average Score</div>
+          <div className="stat-compact">
+            <span className="stat-compact-value">{averageScore}</span>
+            <span className="stat-compact-label">Avg Score</span>
           </div>
-        </section>
+        </div>
 
-        {/* Cases Progress */}
-        <section className="reporting-section">
-          <div className="section-header">
-            <h2>📚 Cases Overview</h2>
-          </div>
-          <div className="cases-progress-list">
-            {mockCasesProgress.map((caseItem) => (
-              <div key={caseItem.id} className="progress-case-item">
-                <div className="case-info">
-                  <span className="case-code">{caseItem.caseCode}</span>
-                  <span className="case-title">{caseItem.title}</span>
-                </div>
-                <div className="case-status-info">
-                  <span className={`status-badge ${caseItem.status}`}>
-                    {caseItem.status === 'completed' ? '✓ Completed' : '⏳ In Progress'}
-                  </span>
-                  {caseItem.solvedAt && (
-                    <span className="solved-date">{caseItem.solvedAt}</span>
-                  )}
-                </div>
+        {/* Two Column Layout */}
+        <div className="reporting-grid">
+          {/* Left Column */}
+          <div className="reporting-left">
+            {/* Submitted Solutions - Top */}
+            <section className="reporting-section scrollable">
+              <div className="section-header-compact">
+                <h3>📄 Submitted Solutions</h3>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* AI Conversations */}
-        <section className="reporting-section">
-          <div className="section-header">
-            <h2>💬 AI Conversations</h2>
-          </div>
-          {mockConversations.map((conv, idx) => (
-            <div key={idx} className="conversation-block">
-              <div className="conversation-header">
-                <span className="conv-case-code">{conv.caseCode}</span>
-                <span className="conv-case-title">{conv.caseTitle}</span>
-              </div>
-              <div className="messages-list">
-                {conv.messages.map((msg, msgIdx) => (
-                  <div key={msgIdx} className={`message-item ${msg.role}`}>
-                    <div className="message-meta">
-                      <span className="message-role">{msg.role === 'user' ? '👤 You' : '🤖 AI Assistant'}</span>
-                      <span className="message-time">{msg.timestamp}</span>
+              <div className="section-content">
+                {mockSubmissions.map((sub, idx) => (
+                  <div key={idx} className="submission-compact">
+                    <div className="submission-compact-header">
+                      <span className="sub-code">{sub.caseCode}</span>
+                      <span className="score-compact">{sub.score}</span>
                     </div>
-                    <div className="message-content">{msg.content}</div>
+                    <div className="submission-compact-date">{sub.submittedAt}</div>
+                    <div className="submission-compact-title">{sub.caseTitle}</div>
+                    <div className="feedback-compact">{sub.feedback}</div>
                   </div>
                 ))}
               </div>
-            </div>
-          ))}
-        </section>
+            </section>
 
-        {/* Submitted Solutions */}
-        <section className="reporting-section">
-          <div className="section-header">
-            <h2>📄 Submitted Solutions & Feedback</h2>
+            {/* AI Conversations - Expandable */}
+            <section className="reporting-section scrollable">
+              <div
+                className="section-header-compact expandable"
+                onClick={() => setConversationsExpanded(!conversationsExpanded)}
+              >
+                <h3>💬 AI Conversations</h3>
+                <span className="expand-icon">{conversationsExpanded ? '▼' : '▶'}</span>
+              </div>
+              {conversationsExpanded && (
+                <div className="section-content">
+                  {mockConversations.map((conv, idx) => (
+                    <div key={idx} className="conversation-compact">
+                      <div className="conv-compact-header">
+                        <span className="conv-code">{conv.caseCode}</span>
+                      </div>
+                      <div className="conv-compact-title">{conv.caseTitle}</div>
+                      <div className="messages-compact">
+                        {conv.messages.map((msg, msgIdx) => (
+                          <div key={msgIdx} className={`msg-compact ${msg.role}`}>
+                            <div className="msg-compact-meta">
+                              <span>{msg.role === 'user' ? '👤' : '🤖'}</span>
+                              <span className="msg-time">{msg.timestamp}</span>
+                            </div>
+                            <div className="msg-compact-content">{msg.content}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </div>
-          {mockSubmissions.map((sub, idx) => (
-            <div key={idx} className="submission-block">
-              <div className="submission-header">
-                <div>
-                  <span className="sub-case-code">{sub.caseCode}</span>
-                  <span className="sub-case-title">{sub.caseTitle}</span>
-                </div>
-                <div className="submission-meta">
-                  <span className="difficulty-label">Difficulty: {'🔨'.repeat(sub.difficulty)}</span>
-                  <span className="score-badge">{sub.score}</span>
-                </div>
-              </div>
-              <div className="submission-info">
-                <span className="submitted-date">Submitted: {sub.submittedAt}</span>
-              </div>
-              <div className="feedback-content">
-                <strong>Feedback:</strong>
-                <p>{sub.feedback}</p>
-              </div>
-            </div>
-          ))}
-        </section>
 
-        {/* Note about mockup data */}
-        <section className="reporting-section mockup-notice">
-          <p>📌 <strong>Note:</strong> This is mockup data for demonstration. Real data will be populated from your actual case interactions and submissions.</p>
-        </section>
+          {/* Right Column - Cases Overview */}
+          <div className="reporting-right">
+            <section className="reporting-section scrollable">
+              <div className="section-header-compact">
+                <h3>📚 Cases Overview</h3>
+              </div>
+              <div className="section-content">
+                {/* Group by date */}
+                <div className="date-divider">2025-10-25</div>
+                {mockCasesProgress.filter(c => c.solvedAt === '2025-10-25').map((caseItem) => (
+                  <div key={caseItem.id} className="case-compact">
+                    <div className="case-compact-code">{caseItem.caseCode}</div>
+                    <div className="case-compact-title">{caseItem.title}</div>
+                    <div className={`case-compact-status ${caseItem.status}`}>
+                      {caseItem.status === 'completed' ? '✓' : '⏳'}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="date-divider">2025-10-20</div>
+                {mockCasesProgress.filter(c => c.solvedAt === '2025-10-20').map((caseItem) => (
+                  <div key={caseItem.id} className="case-compact">
+                    <div className="case-compact-code">{caseItem.caseCode}</div>
+                    <div className="case-compact-title">{caseItem.title}</div>
+                    <div className={`case-compact-status ${caseItem.status}`}>
+                      {caseItem.status === 'completed' ? '✓' : '⏳'}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="date-divider">In Progress</div>
+                {mockCasesProgress.filter(c => !c.solvedAt).map((caseItem) => (
+                  <div key={caseItem.id} className="case-compact">
+                    <div className="case-compact-code">{caseItem.caseCode}</div>
+                    <div className="case-compact-title">{caseItem.title}</div>
+                    <div className={`case-compact-status ${caseItem.status}`}>
+                      {caseItem.status === 'completed' ? '✓' : '⏳'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
     </div>
   );
