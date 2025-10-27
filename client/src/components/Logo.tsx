@@ -15,8 +15,8 @@ export const Logo = () => {
         <path d="M34 8 L34 12 L30 12 L30 14 L38 14 L38 12 L34 12 Z" fill="currentColor" opacity="0.7" />
       </g>
 
-      {/* Text "spezi" with relaxed font */}
-      <text x="50" y="28" fontFamily="Georgia, 'Times New Roman', serif" fontSize="22" fontWeight="400" fontStyle="italic" fill="currentColor">
+      {/* Text "spezi" with modern sans-serif font */}
+      <text x="50" y="28" fontFamily="Inter, 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif" fontSize="20" fontWeight="500" letterSpacing="1.5" fill="currentColor">
         spezi
       </text>
     </svg>
