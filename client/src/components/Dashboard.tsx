@@ -58,12 +58,8 @@ export const Dashboard = () => {
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
-  // Search and filter state
+  // Search state
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCases, setSelectedCases] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('selectedCases');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
-  });
 
   // Resizable code container state
   const [codeContainerHeight, setCodeContainerHeight] = useState<number>(() => {
@@ -140,11 +136,6 @@ export const Dashboard = () => {
   useEffect(() => {
     localStorage.setItem('codeContainerHeight', codeContainerHeight.toString());
   }, [codeContainerHeight]);
-
-  // Save selected cases to localStorage
-  useEffect(() => {
-    localStorage.setItem('selectedCases', JSON.stringify(Array.from(selectedCases)));
-  }, [selectedCases]);
 
   // Resize event handlers
   useEffect(() => {
@@ -227,44 +218,12 @@ export const Dashboard = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const toggleCaseSelection = (caseId: string) => {
-    setSelectedCases(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(caseId)) {
-        newSet.delete(caseId);
-      } else {
-        newSet.add(caseId);
-      }
-      return newSet;
-    });
-  };
-
-  const clearSelectedCases = () => {
-    setSelectedCases(new Set());
-  };
-
-  // Filter function for search
-  const matchesSearch = (text: string) => {
+  // Filter function for search - only filters cases by case_code and title
+  const matchesSearchCases = (caseItem: Case) => {
     if (!searchQuery.trim()) return true;
-    return text.toLowerCase().includes(searchQuery.toLowerCase());
-  };
-
-  const filterCategories = (domain: LawDomain): CivilCategory[] => {
-    if (!searchQuery.trim()) return domain.categories;
-
-    return domain.categories.filter((category: CivilCategory) => {
-      // Check if category name matches
-      if (matchesSearch(category.name)) return true;
-
-      // Check if any subcategory matches
-      return category.subcategories?.some((sub: string) => matchesSearch(sub));
-    });
-  };
-
-  const filterSubcategories = (category: CivilCategory): string[] => {
-    if (!searchQuery.trim()) return category.subcategories;
-
-    return category.subcategories.filter((sub: string) => matchesSearch(sub));
+    const query = searchQuery.toLowerCase();
+    return caseItem.case_code.toLowerCase().includes(query) ||
+           caseItem.title.toLowerCase().includes(query);
   };
 
   const getDifficultyBadge = (level: string) => {
@@ -381,6 +340,29 @@ Concluzia:
                 ◀
               </button>
             </div>
+
+            {/* Global Search for Cases */}
+            <div className="search-filter-section">
+              <div className="search-input-container">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Caută caz după cod sau titlu..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && (
+                  <button
+                    className="clear-search-btn"
+                    onClick={() => setSearchQuery('')}
+                    title="Șterge căutarea"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
           {lawCategories.map((domain) => (
             <div key={domain.id} className="category-section">
               <button
@@ -395,47 +377,9 @@ Concluzia:
                 )}
               </button>
 
-              {/* Search and Filter Section */}
-              {expandedCategory === domain.id && domain.id === 'civil' && (
-                <div className="search-filter-section">
-                  <div className="search-input-container">
-                    <input
-                      type="text"
-                      className="search-input"
-                      placeholder="Caută categorie, subcategorie sau caz..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                      <button
-                        className="clear-search-btn"
-                        onClick={() => setSearchQuery('')}
-                        title="Șterge căutarea"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                  {selectedCases.size > 0 && (
-                    <div className="selected-cases-info">
-                      <span className="selected-count">
-                        {selectedCases.size} {selectedCases.size === 1 ? 'caz selectat' : 'cazuri selectate'}
-                      </span>
-                      <button
-                        className="clear-selection-btn"
-                        onClick={clearSelectedCases}
-                        title="Deselectează toate"
-                      >
-                        Șterge selecția
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {expandedCategory === domain.id && domain.categories && domain.categories.length > 0 && (
                 <ul className="category-list">
-                  {filterCategories(domain).map((category) => (
+                  {domain.categories.map((category) => (
                     <li key={category.id} className="category-wrapper">
                       <button
                         className={`category-item ${expandedCivilCategory === category.id ? 'active' : ''}`}
@@ -451,7 +395,7 @@ Concluzia:
                       </button>
                       {expandedCivilCategory === category.id && category.subcategories && (
                         <ul className="subcategory-list">
-                          {filterSubcategories(category).map((sub, idx) => (
+                          {category.subcategories.map((sub, idx) => (
                             <li key={idx} className="subcategory-wrapper">
                               <button
                                 className={`subcategory-item ${expandedSubcategory === sub ? 'active' : ''}`}
@@ -473,22 +417,11 @@ Concluzia:
                                     <li className="case-item-empty">Nu există cazuri</li>
                                   ) : (
                                     cases
-                                      .filter(caseItem => matchesSearch(caseItem.title) || matchesSearch(caseItem.case_code))
+                                      .filter(matchesSearchCases)
                                       .map((caseItem) => (
                                       <li key={caseItem.id} className="case-list-item">
-                                        <input
-                                          type="checkbox"
-                                          className="case-checkbox"
-                                          checked={selectedCases.has(caseItem.id)}
-                                          onChange={(e) => {
-                                            e.stopPropagation();
-                                            toggleCaseSelection(caseItem.id);
-                                          }}
-                                          onClick={(e) => e.stopPropagation()}
-                                          title={selectedCases.has(caseItem.id) ? 'Deselectează cazul' : 'Selectează cazul'}
-                                        />
                                         <button
-                                          className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''} ${selectedCases.has(caseItem.id) ? 'selected' : ''}`}
+                                          className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''}`}
                                           onClick={() => handleCaseClick(caseItem)}
                                         >
                                           <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
