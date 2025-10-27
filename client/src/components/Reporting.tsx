@@ -38,7 +38,7 @@ interface CaseProgress {
 }
 
 export const Reporting = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [expandedConvs, setExpandedConvs] = useState<Set<number>>(new Set());
 
