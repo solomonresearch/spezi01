@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AlertCircle, ArrowLeft, Bot } from 'lucide-react';
 import type { CaseGeneratorState, GeneratedCase, LegalDomain, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
 import { generateCaseCode } from '../../constants/caseGeneratorData';
 import { caseGeneratorService } from '../../services/caseGeneratorService';
@@ -9,6 +10,8 @@ import { ArticleSelector } from './ArticleSelector';
 import { ContextForm } from './ContextForm';
 import { ConfigurationPanel } from './ConfigurationPanel';
 import { GeneratedCaseEditor } from './GeneratedCaseEditor';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const CaseGenerator = () => {
   const navigate = useNavigate();
@@ -126,58 +129,76 @@ export const CaseGenerator = () => {
   }, []);
 
   return (
-    <div className="case-generator">
-      <button
-        className="btn-back-to-dashboard"
-        onClick={() => navigate('/dashboard')}
-        title="Înapoi la Dashboard"
-      >
-        ← Înapoi la Dashboard
-      </button>
-      <header className="case-generator-header">
-        <h1>🤖 Generator de Cazuri Juridice</h1>
-        <p className="subtitle">Generare automată de cazuri practice cu AI</p>
+    <div className="min-h-screen bg-gradient-to-br from-prussian-blue-500/10 to-air-blue-500/10">
+      <div className="container max-w-5xl mx-auto p-4 sm:p-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Înapoi la Dashboard
+        </Button>
 
-        {/* Progress Steps */}
-        <div className="progress-steps">
-          <div className={`step ${currentStep >= 1 ? 'active' : ''} ${currentStep > 1 ? 'completed' : ''}`}>
-            <div className="step-number">1</div>
-            <div className="step-label">Domeniu</div>
-          </div>
-          <div className="step-connector"></div>
-          <div className={`step ${currentStep >= 2 ? 'active' : ''} ${currentStep > 2 ? 'completed' : ''}`}>
-            <div className="step-number">2</div>
-            <div className="step-label">Categorii</div>
-          </div>
-          <div className="step-connector"></div>
-          <div className={`step ${currentStep >= 3 ? 'active' : ''} ${currentStep > 3 ? 'completed' : ''}`}>
-            <div className="step-number">3</div>
-            <div className="step-label">Articole</div>
-          </div>
-          <div className="step-connector"></div>
-          <div className={`step ${currentStep >= 4 ? 'active' : ''} ${currentStep > 4 ? 'completed' : ''}`}>
-            <div className="step-number">4</div>
-            <div className="step-label">Context</div>
-          </div>
-          <div className="step-connector"></div>
-          <div className={`step ${currentStep >= 5 ? 'active' : ''} ${currentStep > 5 ? 'completed' : ''}`}>
-            <div className="step-number">5</div>
-            <div className="step-label">Configurare</div>
-          </div>
-        </div>
-      </header>
+        <header className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-center mb-2 flex items-center justify-center gap-2">
+            <Bot className="h-8 w-8" />
+            Generator de Cazuri Juridice
+          </h1>
+          <p className="text-center text-muted-foreground">
+            Generare automată de cazuri practice cu AI
+          </p>
 
-      {/* Error Display */}
-      {errors.length > 0 && (
-        <div className="error-messages">
-          {errors.map((error, idx) => (
-            <div key={idx} className="error-message">⚠️ {error}</div>
-          ))}
-        </div>
-      )}
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center mt-8 gap-2 sm:gap-4">
+            {[
+              { number: 1, label: 'Domeniu' },
+              { number: 2, label: 'Categorii' },
+              { number: 3, label: 'Articole' },
+              { number: 4, label: 'Context' },
+              { number: 5, label: 'Configurare' }
+            ].map((step, index) => (
+              <div key={step.number} className="flex items-center">
+                {index > 0 && (
+                  <div className={`w-8 sm:w-16 h-0.5 transition-colors ${
+                    currentStep > step.number - 1 ? 'bg-primary' : 'bg-muted'
+                  }`} />
+                )}
+                <div className="flex flex-col items-center">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                    currentStep > step.number
+                      ? 'bg-primary text-primary-foreground'
+                      : currentStep === step.number
+                      ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {step.number}
+                  </div>
+                  <span className={`text-xs sm:text-sm mt-1 transition-colors hidden sm:block ${
+                    currentStep >= step.number ? 'text-foreground font-medium' : 'text-muted-foreground'
+                  }`}>
+                    {step.label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </header>
 
-      {/* Step Content */}
-      <div className="step-content">
+        {/* Error Display */}
+        {errors.length > 0 && (
+          <div className="mb-6 space-y-2">
+            {errors.map((error, idx) => (
+              <Alert key={idx} variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ))}
+          </div>
+        )}
+
+        {/* Step Content */}
+        <div className="mb-6">
         {currentStep === 1 && (
           <DomainSelector
             selectedDomain={state.selectedDomain}
@@ -222,41 +243,45 @@ export const CaseGenerator = () => {
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      {!state.generatedCase && (
-        <div className="step-navigation">
-          <button
-            onClick={goToPreviousStep}
-            disabled={currentStep === 1}
-            className="btn-nav btn-prev"
-          >
-            ← Înapoi
-          </button>
-
-          {currentStep < 5 && (
-            <button
-              onClick={goToNextStep}
-              className="btn-nav btn-next"
+        {/* Navigation Buttons */}
+        {!state.generatedCase && (
+          <div className="flex justify-between items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              onClick={goToPreviousStep}
+              disabled={currentStep === 1}
+              className="gap-2"
             >
-              Continuă →
-            </button>
-          )}
-        </div>
-      )}
+              <ArrowLeft className="h-4 w-4" />
+              Înapoi
+            </Button>
 
-      {/* Generated Case Editor */}
-      {state.generatedCase && (
-        <GeneratedCaseEditor
-          caseData={state.generatedCase}
-          caseCode={state.caseCode}
-          selectedArticles={state.selectedArticles}
-          difficultyLevel={state.difficultyLevel}
-          weekNumber={state.weekNumber}
-          subcategory={state.subcategory}
-          onChange={handleGeneratedCaseChange}
-          onReset={resetGenerator}
-        />
-      )}
+            {currentStep < 5 && (
+              <Button
+                onClick={goToNextStep}
+                className="gap-2 ml-auto"
+              >
+                Continuă
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Generated Case Editor */}
+        {state.generatedCase && (
+          <GeneratedCaseEditor
+            caseData={state.generatedCase}
+            caseCode={state.caseCode}
+            selectedArticles={state.selectedArticles}
+            difficultyLevel={state.difficultyLevel}
+            weekNumber={state.weekNumber}
+            subcategory={state.subcategory}
+            onChange={handleGeneratedCaseChange}
+            onReset={resetGenerator}
+          />
+        )}
+      </div>
     </div>
   );
 };

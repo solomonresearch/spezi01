@@ -3,6 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Logo } from './Logo';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowLeft, Sparkles, Shield, Users, BarChart3, FolderKanban, Settings } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -54,128 +59,141 @@ export const AdminPanel = () => {
 
   if (!profile || !profile.is_admin) {
     return (
-      <div className="admin-container">
-        <div className="admin-unauthorized">
-          <h2>Access Denied</h2>
-          <p>You do not have permission to access this page.</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-prussian-blue-500/10 to-air-blue-500/10 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Shield className="h-6 w-6" />
+              Access Denied
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">You do not have permission to access this page.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="admin-container">
-      <header className="admin-header">
-        <div className="header-left">
-          <Logo />
-          <span className="beta-badge">Beta v0.1</span>
-          <span className="admin-title">Admin Panel</span>
-        </div>
-        <div className="admin-nav">
-          <button
-            onClick={() => navigate('/case-generator')}
-            className="btn-case-generator"
-            style={{
-              background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '6px',
-              fontSize: '15px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              marginRight: '12px',
-              boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(5, 150, 105, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(5, 150, 105, 0.3)';
-            }}
-          >
-            🤖 GENERATOR DE CAZURI
-          </button>
-          <button onClick={() => navigate('/dashboard')} className="btn-back">
-            Back to Dashboard
-          </button>
+    <div className="min-h-screen bg-gradient-to-br from-prussian-blue-500/10 to-air-blue-500/10">
+      <header className="bg-background border-b border-border sticky top-0 z-10">
+        <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <Logo />
+            <Badge variant="outline" className="hidden sm:flex">Beta v0.1</Badge>
+            <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Admin Panel
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => navigate('/case-generator')}
+              className="gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Generator de Cazuri</span>
+              <span className="sm:hidden">Generator</span>
+            </Button>
+            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="admin-content">
+      <div className="container max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Users Section */}
-        <section className="admin-section">
-          <div className="section-header">
-            <h2>Users</h2>
-            <span className="user-count">{users.length} total</span>
-          </div>
-
-          {loading ? (
-            <div className="admin-loading">Loading users...</div>
-          ) : error ? (
-            <div className="admin-error">{error}</div>
-          ) : (
-            <div className="users-table-container">
-              <table className="users-table">
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Name</th>
-                    <th>Username</th>
-                    <th>Admin</th>
-                    <th>Joined</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td>{user.email}</td>
-                      <td>{user.name}</td>
-                      <td>{user.username}</td>
-                      <td>
-                        <span className={`admin-badge ${user.is_admin ? 'admin' : ''}`}>
-                          {user.is_admin ? 'Yes' : 'No'}
-                        </span>
-                      </td>
-                      <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Users
+              </span>
+              <Badge variant="secondary">{users.length} total</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading users...</div>
+            ) : error ? (
+              <div className="text-center py-8 text-destructive">{error}</div>
+            ) : (
+              <div className="rounded-md border overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Username</TableHead>
+                      <TableHead>Admin</TableHead>
+                      <TableHead>Joined</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">{user.email}</TableCell>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>{user.username}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.is_admin ? 'default' : 'secondary'}>
+                            {user.is_admin ? 'Yes' : 'No'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Placeholder Sections */}
-        <section className="admin-section placeholder">
-          <div className="section-header">
-            <h2>Analytics</h2>
-          </div>
-          <div className="placeholder-content">
-            <p>Coming soon...</p>
-          </div>
-        </section>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Analytics
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8 text-muted-foreground">Coming soon...</p>
+            </CardContent>
+          </Card>
 
-        <section className="admin-section placeholder">
-          <div className="section-header">
-            <h2>Case Management</h2>
-          </div>
-          <div className="placeholder-content">
-            <p>Coming soon...</p>
-          </div>
-        </section>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FolderKanban className="h-5 w-5" />
+                Case Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8 text-muted-foreground">Coming soon...</p>
+            </CardContent>
+          </Card>
 
-        <section className="admin-section placeholder">
-          <div className="section-header">
-            <h2>System Settings</h2>
-          </div>
-          <div className="placeholder-content">
-            <p>Coming soon...</p>
-          </div>
-        </section>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                System Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-center py-8 text-muted-foreground">Coming soon...</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

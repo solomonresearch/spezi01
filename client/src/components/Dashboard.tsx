@@ -9,6 +9,42 @@ import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
 import { CONSTITUTIONAL_LAW_CATEGORIES } from '../constants/constitutionalLawCategories';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+import {
+  ChevronRight,
+  ChevronDown,
+  ChevronLeft,
+  Hammer,
+  BookOpen,
+  Bot,
+  Check,
+  Scale,
+  Target,
+  Zap,
+  Book,
+  XCircle,
+  Send,
+  Search,
+  Menu,
+  X,
+  Shield,
+  CheckCircle,
+  FileText,
+  HelpCircle,
+  Eye,
+  Lightbulb
+} from 'lucide-react';
 
 interface CivilCategory {
   id: string;
@@ -71,6 +107,9 @@ export const Dashboard = () => {
   const [showHints, setShowHints] = useState(false);
   const [showSteps, setShowSteps] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [mobileChatOpen, setMobileChatOpen] = useState(false);
+  const [mobileCodeOpen, setMobileCodeOpen] = useState(false);
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [constitutionText, setConstitutionText] = useState<string>('');
@@ -118,6 +157,31 @@ export const Dashboard = () => {
     articles: articles.map(a => a.article_reference)
   } : undefined;
 
+  // Toast notifications for assessment
+  useEffect(() => {
+    if (assessmentError) {
+      toast.error('Eroare la evaluare', {
+        description: assessmentError
+      });
+    }
+  }, [assessmentError]);
+
+  useEffect(() => {
+    if (aiDetectionPassed === false) {
+      toast.error('Text generat de AI detectat', {
+        description: 'Te rugăm să scrii soluția cu propriile tale cuvinte.'
+      });
+    }
+  }, [aiDetectionPassed]);
+
+  useEffect(() => {
+    if (assessmentResult && aiDetectionPassed === true) {
+      toast.success('Evaluare completă!', {
+        description: 'Soluția ta a fost evaluată cu succes.'
+      });
+    }
+  }, [assessmentResult, aiDetectionPassed]);
+
   // AI Chat hook
   const { messages, isLoading: chatLoading, error: chatError, sendMessage } = useChat({
     caseId: selectedCaseId,
@@ -127,10 +191,19 @@ export const Dashboard = () => {
   const [chatInput, setChatInput] = useState('');
   const chatMessagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Toast notification for chat errors
+  useEffect(() => {
+    if (chatError) {
+      toast.error('Eroare la trimiterea mesajului', {
+        description: chatError
+      });
+    }
+  }, [chatError]);
+
   const codeTypes = [
-    { id: 'civil', name: 'Codul Civil', icon: '⚖️' },
-    { id: 'constitution', name: 'Constituția României', icon: '🏛️' },
-    { id: 'criminal', name: 'Codul Penal', icon: '👮' }
+    { id: 'civil', name: 'Codul Civil', icon: <Scale className="h-4 w-4" /> },
+    { id: 'constitution', name: 'Constituția României', icon: <Book className="h-4 w-4" /> },
+    { id: 'criminal', name: 'Codul Penal', icon: <Shield className="h-4 w-4" /> }
   ];
 
   // Load code when selectedCodeType changes
@@ -241,6 +314,7 @@ export const Dashboard = () => {
     setSelectedCaseId(caseItem.id);
     setShowHints(false); // Reset hints when switching cases
     setShowSteps(false); // Reset steps when switching cases
+    setMobileSheetOpen(false); // Close mobile sheet when case is selected
   };
 
   const toggleSidebar = () => {
@@ -257,10 +331,10 @@ export const Dashboard = () => {
 
   const getDifficultyBadge = (level: string) => {
     const normalizedLevel = level.toLowerCase();
-    if (normalizedLevel === 'ușor') return '🟢';
-    if (normalizedLevel === 'mediu') return '🟡';
-    if (normalizedLevel === 'dificil') return '🔴';
-    return '';
+    if (normalizedLevel === 'ușor') return <span className="inline-block w-2 h-2 rounded-full bg-green-500" />;
+    if (normalizedLevel === 'mediu') return <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" />;
+    if (normalizedLevel === 'dificil') return <span className="inline-block w-2 h-2 rounded-full bg-red-500" />;
+    return null;
   };
 
   const handleCodeTypeClick = (codeType: 'civil' | 'constitution' | 'criminal') => {
@@ -337,77 +411,54 @@ Concluzia:
     setSolutionText('');
   }, [selectedCaseId, resetAssessment]);
 
-  return (
-    <div className="app-container">
-      {/* Compact Header */}
-      <header className="app-header">
-        <button className="header-left" onClick={() => navigate('/dashboard')} title="Go to Dashboard">
-          <Logo />
-          <span className="beta-badge">Beta v0.1</span>
-        </button>
-        <div className="user-menu">
-          <button onClick={() => navigate('/reporting')} className="btn-reporting" title="My Progress">
-            Progress
-          </button>
-          {profile?.is_admin && (
-            <button onClick={() => navigate('/admin')} className="btn-admin" title="Admin Panel">
-              Admin
+  // Reusable sidebar content for both desktop and mobile
+  const renderSidebarContent = () => (
+    <>
+      {/* Global Search for Cases */}
+      <div className="px-4 py-3 border-b border-border">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Caută caz după cod sau titlu..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-8"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              title="Șterge căutarea"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded"
+            >
+              <X className="h-4 w-4" />
             </button>
           )}
-          <span className="user-email">{user?.email}</span>
-          <button onClick={handleSignOut} className="btn-signout">Sign Out</button>
         </div>
-      </header>
+      </div>
 
-      <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        {/* Sidebar */}
-        {!sidebarCollapsed && (
-          <aside className="sidebar">
-            <div className="sidebar-header">
-              <h3 className="sidebar-title">Law Categories</h3>
-              <button className="btn-toggle-sidebar" onClick={toggleSidebar} title="Hide sidebar">
-                ◀
-              </button>
-            </div>
-
-            {/* Global Search for Cases */}
-            <div className="search-filter-section">
-              <div className="search-input-container">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Caută caz după cod sau titlu..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    className="clear-search-btn"
-                    onClick={() => setSearchQuery('')}
-                    title="Șterge căutarea"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
+      <ScrollArea className="flex-1">
+        <div className="p-2">
           {lawCategories.map((domain) => (
-            <div key={domain.id} className="category-section">
+            <div key={domain.id} className="mb-1">
               <button
-                className={`category-btn ${expandedCategory === domain.id ? 'active' : ''}`}
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                  expandedCategory === domain.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-accent hover:text-accent-foreground'
+                }`}
                 onClick={() => toggleCategory(domain.id)}
               >
-                {domain.name}
+                <span>{domain.name}</span>
                 {domain.categories && domain.categories.length > 0 && (
-                  <span className="expand-icon">
-                    {expandedCategory === domain.id ? '▼' : '▶'}
-                  </span>
+                  <ChevronRight className={`h-4 w-4 transition-transform ${
+                    expandedCategory === domain.id ? 'rotate-90' : ''
+                  }`} />
                 )}
               </button>
 
               {expandedCategory === domain.id && domain.categories && domain.categories.length > 0 && (
-                <ul className="category-list">
+                <ul className="ml-2 mt-1 space-y-1">
                   {domain.categories.map((category) => {
                     const isExpanded = domain.id === 'civil'
                       ? expandedCivilCategory === category.id
@@ -417,256 +468,536 @@ Concluzia:
                       : toggleConstitutionalCategory;
 
                     return (
-                    <li key={category.id} className="category-wrapper">
-                      <button
-                        className={`category-item ${isExpanded ? 'active' : ''}`}
-                        onClick={() => toggleFunc(category.id)}
-                        title={category.description}
-                      >
-                        {category.name}
-                        {category.subcategories && category.subcategories.length > 0 && (
-                          <span className="expand-icon-small">
-                            {isExpanded ? '▼' : '▶'}
-                          </span>
-                        )}
-                      </button>
-                      {isExpanded && category.subcategories && (
-                        <ul className="subcategory-list">
-                          {category.subcategories.map((sub, idx) => (
-                            <li key={idx} className="subcategory-wrapper">
-                              <button
-                                className={`subcategory-item ${expandedSubcategory === sub ? 'active' : ''}`}
-                                onClick={() => toggleSubcategory(sub)}
-                              >
-                                {sub.replace(category.name + ' (', '').replace(')', '')}
-                                {expandedSubcategory === sub && cases.length > 0 && (
-                                  <span className="expand-icon-smaller">
-                                    {expandedSubcategory === sub ? '▼' : '▶'}
-                                  </span>
-                                )}
-                              </button>
-                              {/* Show cases under selected subcategory */}
-                              {expandedSubcategory === sub && (
-                                <ul className="case-list">
-                                  {casesLoading ? (
-                                    <li className="case-item-loading">Se încarcă cazurile...</li>
-                                  ) : cases.length === 0 ? (
-                                    <li className="case-item-empty">Nu există cazuri</li>
-                                  ) : (
-                                    cases
-                                      .filter(matchesSearchCases)
-                                      .map((caseItem) => (
-                                      <li key={caseItem.id} className="case-list-item">
-                                        <button
-                                          className={`case-item-btn ${selectedCaseId === caseItem.id ? 'active' : ''}`}
-                                          onClick={() => handleCaseClick(caseItem)}
-                                        >
-                                          <span className="case-difficulty">{getDifficultyBadge(caseItem.level)}</span>
-                                          {caseItem.verified && <span className="verified-badge" title="Verificat de profesionist">✓</span>}
-                                          <span className="case-title-short">
-                                            {caseItem.case_code}: {caseItem.title.replace(/^Caz \d+:\s*/i, '')}
-                                          </span>
-                                        </button>
-                                      </li>
-                                    ))
+                      <li key={category.id}>
+                        <button
+                          className={`w-full flex items-center justify-between px-3 py-1.5 text-xs rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                            isExpanded
+                              ? 'bg-accent text-accent-foreground'
+                              : 'hover:bg-accent/50'
+                          }`}
+                          onClick={() => toggleFunc(category.id)}
+                          title={category.description}
+                        >
+                          <span>{category.name}</span>
+                          {category.subcategories && category.subcategories.length > 0 && (
+                            <ChevronRight className={`h-3 w-3 transition-transform ${
+                              isExpanded ? 'rotate-90' : ''
+                            }`} />
+                          )}
+                        </button>
+                        {isExpanded && category.subcategories && (
+                          <ul className="ml-2 mt-1 space-y-1">
+                            {category.subcategories.map((sub, idx) => (
+                              <li key={idx}>
+                                <button
+                                  className={`w-full flex items-center justify-between px-3 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                                    expandedSubcategory === sub
+                                      ? 'bg-secondary text-secondary-foreground font-medium'
+                                      : 'hover:bg-accent/30'
+                                  }`}
+                                  onClick={() => toggleSubcategory(sub)}
+                                >
+                                  <span className="truncate">{sub.replace(category.name + ' (', '').replace(')', '')}</span>
+                                  {expandedSubcategory === sub && cases.length > 0 && (
+                                    <ChevronDown className="h-3 w-3 ml-1" />
                                   )}
-                                </ul>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
+                                </button>
+                                {/* Show cases under selected subcategory */}
+                                {expandedSubcategory === sub && (
+                                  <ul className="ml-2 mt-1 space-y-0.5">
+                                    {casesLoading ? (
+                                      <>
+                                        <li className="px-2 py-1.5">
+                                          <div className="flex items-center gap-1.5">
+                                            <Skeleton className="h-5 w-8" />
+                                            <Skeleton className="h-5 flex-1" />
+                                          </div>
+                                        </li>
+                                        <li className="px-2 py-1.5">
+                                          <div className="flex items-center gap-1.5">
+                                            <Skeleton className="h-5 w-8" />
+                                            <Skeleton className="h-5 flex-1" />
+                                          </div>
+                                        </li>
+                                        <li className="px-2 py-1.5">
+                                          <div className="flex items-center gap-1.5">
+                                            <Skeleton className="h-5 w-8" />
+                                            <Skeleton className="h-5 flex-1" />
+                                          </div>
+                                        </li>
+                                      </>
+                                    ) : cases.length === 0 ? (
+                                      <li className="px-3 py-1.5 text-xs text-muted-foreground">Nu există cazuri</li>
+                                    ) : (
+                                      cases
+                                        .filter(matchesSearchCases)
+                                        .map((caseItem) => (
+                                          <li key={caseItem.id}>
+                                            <button
+                                              className={`w-full flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
+                                                selectedCaseId === caseItem.id
+                                                  ? 'bg-primary text-primary-foreground'
+                                                  : 'hover:bg-accent/50'
+                                              }`}
+                                              onClick={() => handleCaseClick(caseItem)}
+                                            >
+                                              <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-auto">
+                                                {getDifficultyBadge(caseItem.level)}
+                                              </Badge>
+                                              {caseItem.verified && (
+                                                <span title="Verificat de profesionist">
+                                                  <Check className="h-3 w-3 text-green-600" />
+                                                </span>
+                                              )}
+                                              <span className="truncate text-left">
+                                                {caseItem.case_code}: {caseItem.title.replace(/^Caz \d+:\s*/i, '')}
+                                              </span>
+                                            </button>
+                                          </li>
+                                        ))
+                                    )}
+                                  </ul>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
                     );
                   })}
                 </ul>
               )}
             </div>
           ))}
+        </div>
+      </ScrollArea>
+    </>
+  );
+
+  return (
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header with Tailwind */}
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="container flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-2">
+            {/* Mobile menu button */}
+            <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 p-0 flex flex-col">
+                <SheetHeader className="px-4 py-3 border-b">
+                  <SheetTitle>Law Categories</SheetTitle>
+                </SheetHeader>
+                {renderSidebarContent()}
+              </SheetContent>
+            </Sheet>
+
+            <button
+              onClick={() => navigate('/dashboard')}
+              title="Go to Dashboard"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+            >
+              <Logo />
+              <Badge variant="secondary" className="text-xs">Beta v0.1</Badge>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => navigate('/reporting')}
+              variant="ghost"
+              size="sm"
+              title="My Progress"
+            >
+              Progress
+            </Button>
+            {profile?.is_admin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                variant="ghost"
+                size="sm"
+                title="Admin Panel"
+              >
+                Admin
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <span className="text-sm">{user?.email}</span>
+                  <span className="text-xs">▼</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/reporting')}>
+                  Progress
+                </DropdownMenuItem>
+                {profile?.is_admin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    Admin Panel
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden h-full">
+        {/* Desktop Sidebar - Hidden on mobile */}
+        {!sidebarCollapsed && (
+          <aside className="hidden lg:flex w-80 border-r border-border bg-muted/30 flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <h3 className="text-lg font-semibold">Law Categories</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                title="Hide sidebar"
+                className="h-8 w-8"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {renderSidebarContent()}
           </aside>
         )}
 
-        {/* Collapsed sidebar toggle button */}
+        {/* Collapsed sidebar toggle button - Hidden on mobile */}
         {sidebarCollapsed && (
-          <button className="btn-show-sidebar" onClick={toggleSidebar} title="Show sidebar">
-            ▶
-          </button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="hidden lg:flex fixed left-2 top-20 z-40 h-10 w-10 shadow-lg"
+            onClick={toggleSidebar}
+            title="Show sidebar"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
         )}
 
-        {/* Main Content */}
-        <main className="main-content">
+        {/* Main Content with Tailwind */}
+        <main className="flex-1 overflow-y-auto bg-background">
           {caseLoading ? (
-            <div className="case-display">
-              <p className="loading-message">Se încarcă cazul...</p>
+            <div className="container max-w-6xl mx-auto p-6 space-y-6">
+              {/* Assessment Module Skeleton */}
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-48" />
+                </CardHeader>
+              </Card>
+
+              {/* Case Header Skeleton */}
+              <div className="pb-4 border-b border-border space-y-3">
+                <Skeleton className="h-8 w-3/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+              </div>
+
+              {/* Case Content Skeletons */}
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-40" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-4/5" />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-36" />
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-6 w-28" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-11/12" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-28" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
             </div>
           ) : !caseData ? (
-            <div className="case-display">
-              <div className="no-case-selected">
-                <h2>📚 Selectează un caz</h2>
-                <p>Alege un caz din bara laterală pentru a începe studiul.</p>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-primary/10 p-6">
+                    <BookOpen className="h-16 w-16 text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold">Selectează un caz</h2>
+                  <p className="text-muted-foreground">Alege un caz din bara laterală pentru a începe studiul.</p>
+                </div>
               </div>
             </div>
           ) : (
-            <div className="case-display">
-              {/* Assessment Module */}
-              <div className="assessment-module">
-                <button
-                  className="assessment-header"
-                  onClick={toggleAssessmentModule}
-                >
-                  <span className="assessment-title">⚡📖 Rezolvă speța!</span>
-                  <span className="assessment-toggle-icon">{assessmentExpanded ? '▼' : '▶'}</span>
-                </button>
+            <div className="container max-w-6xl mx-auto p-6 space-y-6">
+              {/* Assessment Module with Card */}
+              <Card className="bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+                <CardHeader>
+                  <button
+                    onClick={toggleAssessmentModule}
+                    className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                  >
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Zap className="h-5 w-5" />
+                      <Book className="h-5 w-5" />
+                      Rezolvă speța!
+                    </CardTitle>
+                    <ChevronRight className={`h-5 w-5 transition-transform ${assessmentExpanded ? 'rotate-90' : ''}`} />
+                  </button>
+                </CardHeader>
 
                 {assessmentExpanded && (
-                  <div className="assessment-content">
-                    {/* Difficulty Slider */}
-                    <div className="difficulty-selector">
-                      <label className="difficulty-label">Exigența corectorului:</label>
-                      <div className="difficulty-slider">
-                        <button
-                          className={`difficulty-option ${difficultyLevel === 1 ? 'active' : ''}`}
+                  <CardContent className="space-y-4">
+                    {/* Difficulty Selector */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Exigența corectorului:</Label>
+                      <div className="flex gap-2 flex-nowrap">
+                        <Button
+                          variant={difficultyLevel === 1 ? 'default' : 'outline'}
+                          size="sm"
                           onClick={() => handleDifficultyChange(1)}
                           title="Ciocan Juridic Ușor"
+                          className="flex-1 min-w-[100px]"
                         >
-                          <span className="hammer-icon">🔨</span>
-                          <span className="difficulty-text">Ușor</span>
-                        </button>
-                        <button
-                          className={`difficulty-option ${difficultyLevel === 3 ? 'active' : ''}`}
+                          <Hammer className="mr-1 h-4 w-4" />
+                          Ușor
+                        </Button>
+                        <Button
+                          variant={difficultyLevel === 3 ? 'default' : 'outline'}
+                          size="sm"
                           onClick={() => handleDifficultyChange(3)}
                           title="Ciocan Juridic Mediu"
+                          className="flex-1 min-w-[100px] gap-0.5"
                         >
-                          <span className="hammer-icon">🔨🔨🔨</span>
-                          <span className="difficulty-text">Mediu</span>
-                        </button>
-                        <button
-                          className={`difficulty-option ${difficultyLevel === 5 ? 'active' : ''}`}
+                          <Hammer className="h-3.5 w-3.5" />
+                          <Hammer className="h-3.5 w-3.5" />
+                          <Hammer className="h-3.5 w-3.5" />
+                          <span className="ml-1">Mediu</span>
+                        </Button>
+                        <Button
+                          variant={difficultyLevel === 5 ? 'default' : 'outline'}
+                          size="sm"
                           onClick={() => handleDifficultyChange(5)}
                           title="Ciocan Juridic Greu"
+                          className="flex-1 min-w-[100px] gap-0.5"
                         >
-                          <span className="hammer-icon">🔨🔨🔨🔨🔨</span>
-                          <span className="difficulty-text">Greu</span>
-                        </button>
+                          <Hammer className="h-3 w-3" />
+                          <Hammer className="h-3 w-3" />
+                          <Hammer className="h-3 w-3" />
+                          <Hammer className="h-3 w-3" />
+                          <Hammer className="h-3 w-3" />
+                          <span className="ml-1">Greu</span>
+                        </Button>
                       </div>
                     </div>
 
-                    {/* Solution Text Area */}
-                    <div className="solution-input-section">
-                      <label className="solution-label">Soluția Ta:</label>
-                      <textarea
-                        className="solution-textarea"
+                    {/* Solution Textarea */}
+                    <div className="space-y-2">
+                      <Label htmlFor="solution">Soluția Ta:</Label>
+                      <Textarea
+                        id="solution"
                         value={solutionText}
                         onChange={(e) => setSolutionText(e.target.value)}
                         placeholder={SOLUTION_TEMPLATE}
                         rows={15}
                         disabled={isDetecting || isAssessing}
+                        className="font-mono text-sm"
                       />
                     </div>
 
                     {/* Submit Button */}
-                    <div className="assessment-actions">
-                      <button
-                        className="btn-assess"
-                        onClick={handleAssessmentSubmit}
-                        disabled={!solutionText.trim() || isDetecting || isAssessing}
-                      >
-                        {isDetecting ? 'Verificare AI în curs...' : isAssessing ? 'Evaluare în curs...' : 'Evaluează Soluția'}
-                      </button>
-                    </div>
+                    <Button
+                      onClick={handleAssessmentSubmit}
+                      disabled={!solutionText.trim() || isDetecting || isAssessing}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isDetecting ? 'Verificare AI în curs...' : isAssessing ? 'Evaluare în curs...' : 'Evaluează Soluția'}
+                    </Button>
 
                     {/* Loading Spinner */}
                     {(isDetecting || isAssessing) && (
-                      <div className="assessment-loading">
-                        <div className="spinner"></div>
-                        <p>{isDetecting ? 'Se verifică autenticitatea textului...' : 'Se evaluează soluția...'}</p>
+                      <div className="flex flex-col items-center justify-center py-8 space-y-3">
+                        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                        <p className="text-sm text-muted-foreground">
+                          {isDetecting ? 'Se verifică autenticitatea textului...' : 'Se evaluează soluția...'}
+                        </p>
                       </div>
                     )}
 
                     {/* AI Detection Failed Message */}
                     {aiDetectionPassed === false && (
-                      <div className="ai-detection-failed">
-                        <div className="eggplant-message">
-                          <span className="eggplant-emoji">🚫🤖</span>
-                          <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? 💀</p>
+                      <div className="bg-destructive/10 border-2 border-destructive rounded-lg p-6 text-center">
+                        <div className="space-y-3">
+                          <div className="flex justify-center gap-2">
+                            <XCircle className="h-10 w-10 text-destructive" />
+                            <Bot className="h-10 w-10 text-destructive" />
+                          </div>
+                          <p className="text-lg font-medium text-destructive">
+                            No, pe bune! Dar de ce folosesti AI sa rezolvi?
+                          </p>
                         </div>
                       </div>
                     )}
 
                     {/* Error Message */}
                     {assessmentError && (
-                      <div className="assessment-error">
-                        <p>{assessmentError}</p>
+                      <div className="bg-destructive/15 border border-destructive text-destructive px-4 py-3 rounded-lg text-sm">
+                        {assessmentError}
                       </div>
                     )}
 
                     {/* Assessment Result */}
                     {assessmentResult && aiDetectionPassed === true && (
-                      <div className="assessment-result">
-                        <div className="result-header">
-                          <h3>✅ Evaluare Completă</h3>
-                          <button
-                            className="btn-reset-assessment"
-                            onClick={() => {
-                              resetAssessment();
-                              setSolutionText('');
-                            }}
-                          >
-                            Resetează
-                          </button>
-                        </div>
-                        <div className="result-content">
-                          <pre className="result-text">{assessmentResult}</pre>
-                        </div>
-                      </div>
+                      <Card className="bg-green-50 border-green-200">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg flex items-center gap-2">
+                              <CheckCircle className="h-5 w-5" />
+                              Evaluare Completă
+                            </CardTitle>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                resetAssessment();
+                                setSolutionText('');
+                              }}
+                            >
+                              Resetează
+                            </Button>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <pre className="text-sm whitespace-pre-wrap font-sans leading-relaxed">{assessmentResult}</pre>
+                        </CardContent>
+                      </Card>
                     )}
-                  </div>
+                  </CardContent>
                 )}
-              </div>
+              </Card>
 
-              <div className="case-header">
-                <div className="case-title-section">
-                  <h2 className="case-title">
+              {/* Case Header with Tailwind */}
+              <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
                     {caseData.case_code}: {caseData.title.replace(/^Caz \d+:\s*/i, '')}
                   </h2>
-                  <span className={`case-level-badge ${caseData.level.toLowerCase()}`}>
-                    {getDifficultyBadge(caseData.level)} {caseData.level}
-                  </span>
-                  {caseData.verified && (
-                    <span className="verified-badge-large" title="Verificat de profesionist">
-                      ✓ Verificat
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="case-section">
-                <h3>🎯 Problema juridică</h3>
-                <p className="legal-problem">{caseData.legal_problem}</p>
-              </div>
-
-              {articles.length > 0 && (
-                <div className="case-section">
-                  <h3>📖 Articole relevante</h3>
-                  <div className="article-tags">
-                    {articles.map((article) => (
-                      <span key={article.id} className="article-tag">
-                        {article.article_reference}
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="secondary" className="text-sm">
+                      {getDifficultyBadge(caseData.level)} {caseData.level}
+                    </Badge>
+                    {caseData.verified && (
+                      <Badge variant="default" className="bg-green-600 hover:bg-green-700 flex items-center gap-1">
+                        <Check className="h-3 w-3" />
+                        Verificat
+                      </Badge>
+                    )}
                   </div>
                 </div>
+              </div>
+
+              {/* Case Content Sections with Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Problema juridică
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-foreground leading-relaxed">{caseData.legal_problem}</p>
+                </CardContent>
+              </Card>
+
+              {articles.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      Articole relevante
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {articles.map((article) => (
+                        <Badge key={article.id} variant="outline" className="text-xs">
+                          {article.article_reference}
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
-              <div className="case-section">
-                <h3>📝 Speta (Cazul)</h3>
-                <p className="case-description">{caseData.case_description}</p>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Speta (Cazul)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-foreground leading-relaxed whitespace-pre-wrap">{caseData.case_description}</p>
+                </CardContent>
+              </Card>
 
-              <div className="case-section">
-                <h3>❓ Întrebare</h3>
-                <p className="case-question">{caseData.question}</p>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5" />
+                    Întrebare
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-foreground leading-relaxed font-medium">{caseData.question}</p>
+                </CardContent>
+              </Card>
 
               {steps.length > 0 && (
                 <div className="case-section">
@@ -674,7 +1005,8 @@ Concluzia:
                     className="btn-toggle-hints"
                     onClick={() => setShowSteps(!showSteps)}
                   >
-                    {showSteps ? 'Ascunde Pași de analiză' : 'Arată Pași de analiză'} 🔍
+                    <Eye className="inline-block h-4 w-4 mr-1" />
+                    {showSteps ? 'Ascunde Pași de analiză' : 'Arată Pași de analiză'}
                   </button>
                   {showSteps && (
                     <div className="hints-content">
@@ -697,7 +1029,8 @@ Concluzia:
                     className="btn-toggle-hints"
                     onClick={() => setShowHints(!showHints)}
                   >
-                    {showHints ? 'Ascunde Indicii' : 'Arată Indicii'} 💡
+                    <Lightbulb className="inline-block h-4 w-4 mr-1" />
+                    {showHints ? 'Ascunde Indicii' : 'Arată Indicii'}
                   </button>
                   {showHints && (
                     <div className="hints-content">
@@ -717,103 +1050,332 @@ Concluzia:
           )}
         </main>
 
-        {/* Right Sidebar - Code + Chat */}
-        <aside className="right-sidebar">
+        {/* Mobile Floating Action Buttons - Visible only on mobile */}
+        <div className="lg:hidden fixed bottom-4 right-4 flex flex-col gap-2 z-40">
+          {/* AI Chat Button */}
+          <Sheet open={mobileChatOpen} onOpenChange={setMobileChatOpen}>
+            <SheetTrigger asChild>
+              <Button
+                size="icon"
+                className="h-14 w-14 rounded-full shadow-lg"
+                title="AI Assistant"
+              >
+                <Bot className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh] p-0 flex flex-col">
+              <SheetHeader className="px-4 py-3 border-b">
+                <SheetTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
+                  AI Assistant
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-1 p-4">
+                  <div className="space-y-3">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-lg px-4 py-2 ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-foreground'
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-muted text-foreground rounded-lg px-4 py-2">
+                          <p className="text-sm animate-pulse">...</p>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatMessagesEndRef} />
+                  </div>
+                </ScrollArea>
+                <div className="border-t p-4">
+                  <form onSubmit={handleSendMessage} className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="Scrie întrebarea ta aici..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={handleKeyPress}
+                      disabled={chatLoading}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={chatLoading || !chatInput.trim()}
+                      size="icon"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Code Reference Button */}
+          <Sheet open={mobileCodeOpen} onOpenChange={setMobileCodeOpen}>
+            <SheetTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-14 w-14 rounded-full shadow-lg"
+                title="Legal Code Reference"
+              >
+                <Book className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh] p-0 flex flex-col">
+              <SheetHeader className="px-4 py-3 border-b">
+                <SheetTitle>Legal Code Reference</SheetTitle>
+              </SheetHeader>
+              <Tabs
+                value={selectedCodeType}
+                onValueChange={(value) => handleCodeTypeClick(value as any)}
+                className="flex flex-col flex-1 overflow-hidden"
+              >
+                <div className="px-4 pt-3">
+                  <TabsList className="grid w-full grid-cols-3">
+                    {codeTypes.map((code) => (
+                      <TabsTrigger
+                        key={code.id}
+                        value={code.id}
+                        className="text-xs"
+                      >
+                        <span className="mr-1">{code.icon}</span>
+                        <span className="hidden sm:inline">{code.name}</span>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                <div className="flex-1 overflow-hidden p-4">
+                  <TabsContent value="civil" className="h-full m-0">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">
+                          Se încarcă Codul Civil...
+                        </p>
+                      </div>
+                    ) : civilCodeText ? (
+                      <ScrollArea className="h-full">
+                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                          {civilCodeText}
+                        </pre>
+                      </ScrollArea>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">Nu există text</p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="constitution" className="h-full m-0">
+                    {loading ? (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">
+                          Se încarcă Constituția...
+                        </p>
+                      </div>
+                    ) : constitutionText ? (
+                      <ScrollArea className="h-full">
+                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                          {constitutionText}
+                        </pre>
+                      </ScrollArea>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">Nu există text</p>
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="criminal" className="h-full m-0">
+                    <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
+                      <div className="rounded-full bg-muted p-6">
+                        <Shield className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-lg font-semibold text-foreground">În curând</p>
+                        <p className="text-sm text-muted-foreground">Acest cod nu este disponibil încă</p>
+                      </div>
+                    </div>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Right Sidebar - Code + Chat (Hidden on mobile) */}
+        <aside className="hidden lg:flex w-[450px] border-l border-border flex-col bg-background">
           {/* Legal Code Display */}
-          <div
-            className="code-display-container"
+          <Card
+            className="rounded-none border-0 border-b flex flex-col"
             style={{ height: `${codeContainerHeight}px` }}
           >
-            {/* Code Type Selector */}
-            <div className="code-header">
-              <div className="code-type-selector-full">
-                {codeTypes.map((code) => (
-                  <button
-                    key={code.id}
-                    className={`code-type-btn-full ${selectedCodeType === code.id ? 'active' : ''}`}
-                    onClick={() => handleCodeTypeClick(code.id as any)}
-                  >
-                    <span className="code-icon">{code.icon}</span>
-                    <span className="code-name">{code.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Tabs
+              value={selectedCodeType}
+              onValueChange={(value) => handleCodeTypeClick(value as any)}
+              className="flex flex-col h-full"
+            >
+              <CardHeader className="pb-2">
+                <TabsList className="grid w-full grid-cols-3">
+                  {codeTypes.map((code) => (
+                    <TabsTrigger
+                      key={code.id}
+                      value={code.id}
+                      className="text-xs"
+                    >
+                      <span className="mr-1">{code.icon}</span>
+                      {code.name}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </CardHeader>
 
-            {/* Code Content */}
-            <div className="code-content">
-              {loading ? (
-                <p className="code-placeholder">
-                  Se încarcă {codeTypes.find(c => c.id === selectedCodeType)?.name}...
-                </p>
-              ) : selectedCodeType === 'civil' && civilCodeText ? (
-                <pre className="code-text">{civilCodeText}</pre>
-              ) : selectedCodeType === 'constitution' && constitutionText ? (
-                <pre className="code-text">{constitutionText}</pre>
-              ) : selectedCodeType === 'criminal' ? (
-                <div className="coming-soon">
-                  <p className="coming-soon-icon">{codeTypes.find(c => c.id === selectedCodeType)?.icon}</p>
-                  <p className="coming-soon-text">În curând</p>
-                  <p className="coming-soon-subtitle">Acest cod nu este disponibil încă</p>
-                </div>
-              ) : (
-                <p className="code-placeholder">Nu există text</p>
-              )}
-            </div>
-          </div>
+              <CardContent className="flex-1 overflow-hidden p-0">
+                <TabsContent value="civil" className="h-full m-0 p-4">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">
+                        Se încarcă Codul Civil...
+                      </p>
+                    </div>
+                  ) : civilCodeText ? (
+                    <ScrollArea className="h-full">
+                      <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+                        {civilCodeText}
+                      </pre>
+                    </ScrollArea>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">Nu există text</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="constitution" className="h-full m-0 p-4">
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">
+                        Se încarcă Constituția...
+                      </p>
+                    </div>
+                  ) : constitutionText ? (
+                    <ScrollArea className="h-full">
+                      <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+                        {constitutionText}
+                      </pre>
+                    </ScrollArea>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">Nu există text</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="criminal" className="h-full m-0 p-4">
+                  <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
+                    <div className="rounded-full bg-muted p-6">
+                      <Shield className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-semibold text-foreground">În curând</p>
+                      <p className="text-sm text-muted-foreground">Acest cod nu este disponibil încă</p>
+                    </div>
+                  </div>
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
 
           {/* Resize Handle */}
           <div
-            className="resize-handle"
+            className="h-1 cursor-row-resize bg-border hover:bg-primary/50 transition-colors flex items-center justify-center group"
             onMouseDown={handleResizeStart}
             title="Drag to resize"
           >
-            <div className="resize-handle-line"></div>
+            <div className="w-12 h-0.5 bg-muted-foreground/30 group-hover:bg-primary/70 rounded-full"></div>
           </div>
 
-          {/* AI Chat */}
-          <div className="chat-container">
-            <h3 className="chat-title">AI Assistant</h3>
-            <div className="chat-messages">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`message ${message.role === 'user' ? 'user-message' : 'bot-message'}`}
-                >
-                  <p>{message.content}</p>
+          {/* AI Chat with Card */}
+          <Card className="flex-1 flex flex-col">
+            <CardHeader className="border-b">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Bot className="h-5 w-5" />
+                AI Assistant
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col p-0">
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-lg px-4 py-2 ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted text-foreground rounded-lg px-4 py-2">
+                        <p className="text-sm animate-pulse">...</p>
+                      </div>
+                    </div>
+                  )}
+                  {chatError && (
+                    <div className="flex justify-start">
+                      <div className="bg-destructive/10 border border-destructive text-destructive rounded-lg px-4 py-2 max-w-[85%]">
+                        <p className="text-sm">{chatError}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={chatMessagesEndRef} />
                 </div>
-              ))}
-              {chatLoading && (
-                <div className="message bot-message">
-                  <p className="typing-indicator">...</p>
-                </div>
-              )}
-              {chatError && (
-                <div className="message error-message">
-                  <p>{chatError}</p>
-                </div>
-              )}
-              <div ref={chatMessagesEndRef} />
-            </div>
-            <form className="chat-input" onSubmit={handleSendMessage}>
-              <input
-                type="text"
-                placeholder="Scrie întrebarea ta aici..."
-                className="chat-text-input"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                disabled={chatLoading}
-              />
-              <button
-                type="submit"
-                className="btn-send"
-                disabled={chatLoading || !chatInput.trim()}
-              >
-                Trimite
-              </button>
-            </form>
-          </div>
+              </ScrollArea>
+              <div className="border-t p-4">
+                <form onSubmit={handleSendMessage} className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Scrie întrebarea ta aici..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    disabled={chatLoading}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="submit"
+                    disabled={chatLoading || !chatInput.trim()}
+                    size="default"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Trimite
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
         </aside>
       </div>
     </div>

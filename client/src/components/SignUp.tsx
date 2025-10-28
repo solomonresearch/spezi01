@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { Check, X as XIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { universities, universitiesByCategory } from '../data/universities';
 import { supabase } from '../lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 
 export const SignUp = () => {
   const [name, setName] = useState('');
@@ -127,132 +133,177 @@ export const SignUp = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Sign Up</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
-              disabled={loading}
-            />
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-prussian-blue-500 to-air-blue-500 p-4">
+      <Card className="w-full max-w-2xl shadow-2xl">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">Sign Up</CardTitle>
+          <CardDescription className="text-center">
+            Create your account to start practicing Romanian law cases
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="John Doe"
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="username">
-              Username <span className="field-hint">(displayed on leaderboard)</span>
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => {
-                const val = e.target.value;
-                setUsername(val);
-                if (val.length >= 3) {
-                  checkUsernameAvailability(val);
-                } else {
-                  setUsernameAvailable(null);
-                }
-              }}
-              placeholder="johndoe123"
-              disabled={loading}
-              className={usernameAvailable === false ? 'input-error' : usernameAvailable === true ? 'input-success' : ''}
-            />
-            {usernameChecking && <p className="field-hint">Checking availability...</p>}
-            {usernameAvailable === true && <p className="field-success">✓ Username available</p>}
-            {usernameAvailable === false && <p className="field-error">✗ Username already taken</p>}
-            <p className="field-hint-small">This will be visible to other users on leaderboards and interactions</p>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="university">University</label>
-            <select
-              id="university"
-              value={university}
-              onChange={(e) => setUniversity(e.target.value)}
-              disabled={loading}
-            >
-              <option value="">Select your university</option>
-              <optgroup label="Public Universities">
-                {universitiesByCategory.Public.map((uni) => (
-                  <option key={uni.code} value={uni.code}>
-                    {uni.code} - {uni.name}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Private Universities">
-                {universitiesByCategory.Private.map((uni) => (
-                  <option key={uni.code} value={uni.code}>
-                    {uni.code} - {uni.name}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Other">
-                {universitiesByCategory.Other.map((uni) => (
-                  <option key={uni.code} value={uni.code}>
-                    {uni.name}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-              disabled={loading}
-            />
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-          {success && (
-            <div className="success-message">
-              Account created successfully! Check your email to confirm. Redirecting to login...
+              <div className="space-y-2">
+                <Label htmlFor="username">
+                  Username{' '}
+                  <span className="text-xs text-muted-foreground font-normal">(displayed on leaderboard)</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setUsername(val);
+                      if (val.length >= 3) {
+                        checkUsernameAvailability(val);
+                      } else {
+                        setUsernameAvailable(null);
+                      }
+                    }}
+                    placeholder="johndoe123"
+                    disabled={loading}
+                    className={
+                      usernameAvailable === false
+                        ? 'border-destructive'
+                        : usernameAvailable === true
+                        ? 'border-green-500'
+                        : ''
+                    }
+                  />
+                  {usernameChecking && (
+                    <p className="text-xs text-muted-foreground mt-1">Checking availability...</p>
+                  )}
+                  {usernameAvailable === true && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Username available
+                    </p>
+                  )}
+                  {usernameAvailable === false && (
+                    <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                      <XIcon className="h-3 w-3" />
+                      Username already taken
+                    </p>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Visible to other users on leaderboards
+                </p>
+              </div>
             </div>
-          )}
-          <button type="submit" disabled={loading} className="submit-button">
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
-      </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="university">University</Label>
+              <Select value={university} onValueChange={setUniversity} disabled={loading}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your university" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Public Universities</SelectLabel>
+                    {universitiesByCategory.Public.map((uni) => (
+                      <SelectItem key={uni.code} value={uni.code}>
+                        {uni.code} - {uni.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Private Universities</SelectLabel>
+                    {universitiesByCategory.Private.map((uni) => (
+                      <SelectItem key={uni.code} value={uni.code}>
+                        {uni.code} - {uni.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Other</SelectLabel>
+                    {universitiesByCategory.Other.map((uni) => (
+                      <SelectItem key={uni.code} value={uni.code}>
+                        {uni.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-destructive/15 border border-destructive text-destructive px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="bg-green-50 border border-green-500 text-green-700 px-4 py-3 rounded-lg text-sm">
+                Account created successfully! Check your email to confirm. Redirecting to login...
+              </div>
+            )}
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Creating account...' : 'Sign Up'}
+            </Button>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary hover:underline font-medium">
+              Login
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

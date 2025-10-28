@@ -7,12 +7,14 @@ import { AdminPanel } from './components/AdminPanel';
 import { Reporting } from './components/Reporting';
 import { CaseGenerator } from './components/CaseGenerator';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { Toaster } from '@/components/ui/sonner';
 import './App.css';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
+        <Toaster position="top-right" richColors />
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />

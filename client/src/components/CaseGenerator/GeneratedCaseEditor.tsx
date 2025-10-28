@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CheckCircle, Sparkles, Edit as EditIcon, AlertCircle, RefreshCw } from 'lucide-react';
 import type { GeneratedCase, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
 import type { CaseToSave } from '../../types/caseGenerator';
 import { saveCaseToSupabase } from '../../services/saveCaseToSupabase';
@@ -150,7 +151,9 @@ export const GeneratedCaseEditor = ({
   if (saveSuccess) {
     return (
       <div className="save-success-screen">
-        <div className="success-icon">✅</div>
+        <div className="success-icon">
+          <CheckCircle className="h-16 w-16" />
+        </div>
         <h2>Caz salvat cu succes!</h2>
         <div className="success-details">
           <p><strong>Cod caz:</strong> {caseCode}</p>
@@ -162,7 +165,8 @@ export const GeneratedCaseEditor = ({
         </div>
         <div className="success-actions">
           <button onClick={onReset} className="btn-primary">
-            ✨ Generează un caz nou
+            <Sparkles className="inline-block h-5 w-5 mr-2" />
+            Generează un caz nou
           </button>
         </div>
       </div>
@@ -172,7 +176,10 @@ export const GeneratedCaseEditor = ({
   return (
     <div className="generated-case-editor">
       <div className="editor-header">
-        <h2>✏️ Editează cazul generat</h2>
+        <h2 className="flex items-center gap-2">
+          <EditIcon className="h-6 w-6" />
+          Editează cazul generat
+        </h2>
         <div className="case-code-display">
           Cod: <strong>{caseCode}</strong>
           <span className="status-badge status-unverified">Neverificat</span>
@@ -181,7 +188,8 @@ export const GeneratedCaseEditor = ({
 
       {saveError && (
         <div className="error-banner">
-          ⚠️ {saveError}
+          <AlertCircle className="inline-block h-4 w-4 mr-1" />
+          {saveError}
         </div>
       )}
 
@@ -333,7 +341,8 @@ export const GeneratedCaseEditor = ({
       {/* Actions */}
       <div className="editor-actions">
         <button onClick={onReset} className="btn-secondary">
-          🔄 Anulează și generează alt caz
+          <RefreshCw className="inline-block h-5 w-5 mr-2" />
+          Anulează și generează alt caz
         </button>
         <button
           onClick={handleSave}
@@ -346,7 +355,10 @@ export const GeneratedCaseEditor = ({
               <span>Se salvează...</span>
             </>
           ) : (
-            <>✅ Trimite către Supabase</>
+            <>
+              <CheckCircle className="inline-block h-5 w-5 mr-2" />
+              Trimite către Supabase
+            </>
           )}
         </button>
       </div>

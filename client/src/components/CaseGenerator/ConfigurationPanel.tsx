@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
+import { Check, ClipboardList, Bot, Loader2 } from 'lucide-react';
 import type { DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
 import { DIFFICULTY_OPTIONS, WEEK_OPTIONS } from '../../constants/caseGeneratorData';
 import { getAllCivilSubcategories } from '../../constants/civilLawCategories';
 import { getAllConstitutionalSubcategories } from '../../constants/constitutionalLawCategories';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ConfigurationPanelProps {
   selectedDomain: LegalDomain | null;
@@ -33,22 +38,26 @@ export const ConfigurationPanel = ({
   }, [difficulty, week, subcat, onChange]);
 
   return (
-    <div className="configuration-panel">
-      <div className="step-header">
-        <h2>Configurează parametrii cazului (opțional)</h2>
-        <p className="step-description">
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold">Configurează parametrii cazului (opțional)</h2>
+        <p className="text-muted-foreground">
           Toate câmpurile sunt opționale - lasă valorile implicite pentru un caz aleatoriu
         </p>
       </div>
 
       {/* Difficulty Level */}
-      <div className="config-section">
-        <h3 className="config-section-title">Nivel de dificultate (opțional)</h3>
-        <div className="difficulty-options">
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Nivel de dificultate (opțional)</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {DIFFICULTY_OPTIONS.map(option => (
             <label
               key={option.value}
-              className={`difficulty-card ${difficulty === option.value ? 'selected' : ''}`}
+              className={`cursor-pointer border rounded-lg p-4 transition-all hover:shadow-md ${
+                difficulty === option.value
+                  ? 'bg-primary/5 border-primary ring-1 ring-primary'
+                  : 'bg-card border-border hover:border-muted-foreground/50'
+              }`}
             >
               <input
                 type="radio"
@@ -56,15 +65,16 @@ export const ConfigurationPanel = ({
                 value={option.value}
                 checked={difficulty === option.value}
                 onChange={(e) => setDifficulty(e.target.value as DifficultyLevel)}
+                className="sr-only"
               />
-              <div className="difficulty-content">
-                <div className="difficulty-header">
-                  <span className="difficulty-label">{option.label}</span>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">{option.label}</span>
                   {difficulty === option.value && (
-                    <span className="difficulty-check">✓</span>
+                    <Check className="h-4 w-4 text-primary" />
                   )}
                 </div>
-                <p className="difficulty-description">{option.description}</p>
+                <p className="text-sm text-muted-foreground">{option.description}</p>
               </div>
             </label>
           ))}
@@ -72,144 +82,156 @@ export const ConfigurationPanel = ({
       </div>
 
       {/* Week Number */}
-      <div className="config-section">
-        <h3 className="config-section-title">Săptămâna de curs (opțional)</h3>
-        <p className="config-hint">
-          Selectează săptămâna pentru organizarea cazurilor în curriculum, sau lasă valoarea implicită
-        </p>
-        <select
-          className="week-select"
-          value={week}
-          onChange={(e) => setWeek(Number(e.target.value))}
-        >
-          {WEEK_OPTIONS.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold">Săptămâna de curs (opțional)</h3>
+          <p className="text-sm text-muted-foreground">
+            Selectează săptămâna pentru organizarea cazurilor în curriculum, sau lasă valoarea implicită
+          </p>
+        </div>
+        <Select value={week.toString()} onValueChange={(value) => setWeek(Number(value))}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {WEEK_OPTIONS.map(option => (
+              <SelectItem key={option.value} value={option.value.toString()}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Subcategory */}
-      <div className="config-section">
-        <h3 className="config-section-title">
-          Subcategorie (opțional)
-        </h3>
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Subcategorie (opțional)</h3>
         {selectedDomain === 'civil' ? (
           <>
-            <p className="config-hint">
+            <p className="text-sm text-muted-foreground">
               Selectează subcategoria pentru drept civil (conform structurii cursului)
             </p>
-            <select
-              className="week-select"
-              value={subcat}
-              onChange={(e) => setSubcat(e.target.value)}
-            >
-              <option value="">Selectează subcategoria...</option>
-              {getAllCivilSubcategories().map((subcatOption) => (
-                <option key={subcatOption} value={subcatOption}>
-                  {subcatOption}
-                </option>
-              ))}
-            </select>
+            <Select value={subcat} onValueChange={setSubcat}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selectează subcategoria..." />
+              </SelectTrigger>
+              <SelectContent>
+                {getAllCivilSubcategories().map((subcatOption) => (
+                  <SelectItem key={subcatOption} value={subcatOption}>
+                    {subcatOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {subcat && (
-              <div className="field-hint success">
-                ✓ Subcategorie: {subcat}
-              </div>
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcat}
+              </p>
             )}
           </>
         ) : selectedDomain === 'constitutional' ? (
           <>
-            <p className="config-hint">
+            <p className="text-sm text-muted-foreground">
               Selectează subcategoria pentru drept constituțional (conform structurii cursului)
             </p>
-            <select
-              className="week-select"
-              value={subcat}
-              onChange={(e) => setSubcat(e.target.value)}
-            >
-              <option value="">Selectează subcategoria...</option>
-              {getAllConstitutionalSubcategories().map((subcatOption) => (
-                <option key={subcatOption} value={subcatOption}>
-                  {subcatOption}
-                </option>
-              ))}
-            </select>
+            <Select value={subcat} onValueChange={setSubcat}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selectează subcategoria..." />
+              </SelectTrigger>
+              <SelectContent>
+                {getAllConstitutionalSubcategories().map((subcatOption) => (
+                  <SelectItem key={subcatOption} value={subcatOption}>
+                    {subcatOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {subcat && (
-              <div className="field-hint success">
-                ✓ Subcategorie: {subcat}
-              </div>
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcat}
+              </p>
             )}
           </>
         ) : (
           <>
-            <p className="config-hint">
+            <p className="text-sm text-muted-foreground">
               Adaugă o subcategorie pentru organizare mai detaliată (opțional)
             </p>
-            <input
+            <Input
               type="text"
-              className="subcategory-input"
               placeholder="Ex: Infracțiuni contra patrimoniului, Separația puterilor, etc."
               value={subcat}
               onChange={(e) => setSubcat(e.target.value)}
               maxLength={100}
             />
             {subcat && (
-              <div className="field-hint success">
-                ✓ Subcategorie: {subcat}
-              </div>
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcat}
+              </p>
             )}
           </>
         )}
       </div>
 
       {/* Summary Box */}
-      <div className="config-summary">
-        <h4>📋 Rezumat configurație:</h4>
-        <div className="summary-grid">
-          <div className="summary-item">
-            <span className="summary-label">Dificultate:</span>
-            <span className="summary-value">
-              {DIFFICULTY_OPTIONS.find(o => o.value === difficulty)?.label}
-            </span>
-          </div>
-          <div className="summary-item">
-            <span className="summary-label">Săptămâna:</span>
-            <span className="summary-value">{week}</span>
-          </div>
-          {subcat && (
-            <div className="summary-item">
-              <span className="summary-label">Subcategorie:</span>
-              <span className="summary-value">{subcat}</span>
+      <Card className="bg-muted/30">
+        <CardContent className="pt-6 space-y-3">
+          <h4 className="font-semibold flex items-center gap-2">
+            <ClipboardList className="h-5 w-5 text-primary" />
+            Rezumat configurație:
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="flex justify-between items-center p-2 bg-background rounded">
+              <span className="text-muted-foreground">Dificultate:</span>
+              <span className="font-medium">
+                {DIFFICULTY_OPTIONS.find(o => o.value === difficulty)?.label}
+              </span>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="flex justify-between items-center p-2 bg-background rounded">
+              <span className="text-muted-foreground">Săptămâna:</span>
+              <span className="font-medium">{week}</span>
+            </div>
+            {subcat && (
+              <div className="flex justify-between items-center p-2 bg-background rounded sm:col-span-2">
+                <span className="text-muted-foreground">Subcategorie:</span>
+                <span className="font-medium">{subcat}</span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Generate Button */}
-      <div className="generate-section">
-        <button
-          className="btn-generate"
+      <div className="space-y-4">
+        <Button
           onClick={onGenerate}
           disabled={isGenerating}
+          size="lg"
+          className="w-full gap-2 text-lg h-14"
         >
           {isGenerating ? (
             <>
-              <span className="spinner"></span>
+              <Loader2 className="h-5 w-5 animate-spin" />
               <span>Se generează cazul...</span>
             </>
           ) : (
             <>
-              <span>🤖 Generează cazul cu AI</span>
+              <Bot className="h-5 w-5" />
+              <span>Generează cazul cu AI</span>
             </>
           )}
-        </button>
+        </Button>
 
         {isGenerating && (
-          <div className="generation-info">
-            <p>Claude AI generează cazul complet...</p>
-            <p className="generation-hint">Acest proces poate dura 10-30 de secunde</p>
-          </div>
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+            <CardContent className="pt-6 text-center space-y-2">
+              <p className="font-medium">Claude AI generează cazul complet...</p>
+              <p className="text-sm text-muted-foreground">Acest proces poate dura 10-30 de secunde</p>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

@@ -1,6 +1,11 @@
 import { useState } from 'react';
+import { AlertCircle, Plus, X } from 'lucide-react';
 import type { LegalDomain, ArticleReference } from '../../types/caseGenerator';
 import { formatArticleReference } from '../../constants/caseGeneratorData';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ArticleSelectorProps {
   selectedDomain: LegalDomain;
@@ -62,77 +67,75 @@ export const ArticleSelector = ({ selectedDomain, selectedArticles, onChange }: 
   };
 
   return (
-    <div className="article-selector">
-      <div className="step-header">
-        <h2>Adaugă articole relevante (opțional)</h2>
-        <p className="step-description">
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-semibold">Adaugă articole relevante (opțional)</h2>
+        <p className="text-muted-foreground">
           Introdu articolele din {getCodeName()} care vor fi folosite în caz, sau lasă gol pentru selecție aleatorie
         </p>
       </div>
 
-      <div className="article-input-section">
-        <div className="input-group">
-          <input
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          <Input
             type="text"
-            className="article-input"
-            placeholder={`Ex: 1, 15, 223 alin. 2, 45-49`}
+            placeholder="Ex: 1, 15, 223 alin. 2, 45-49"
             value={inputValue}
             onChange={(e) => {
               setInputValue(e.target.value);
               setError(null);
             }}
             onKeyPress={handleKeyPress}
+            className="flex-1"
           />
-          <button
-            onClick={handleAdd}
-            className="btn-add-article"
-          >
-            Adaugă articol
-          </button>
+          <Button onClick={handleAdd} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Adaugă
+          </Button>
         </div>
 
         {error && (
-          <div className="input-error">⚠️ {error}</div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
-        <div className="input-hints">
-          <p><strong>Exemple valide:</strong></p>
-          <ul>
-            <li>Un articol simplu: <code>1</code>, <code>223</code></li>
-            <li>Cu alineat: <code>15 alin. 2</code>, <code>45 al. 3</code></li>
-            <li>Interval: <code>45-49</code></li>
-            <li>Cu literă: <code>223 lit. a</code></li>
+        <div className="bg-muted/50 p-4 rounded-lg space-y-2 text-sm">
+          <p className="font-semibold">Exemple valide:</p>
+          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+            <li>Un articol simplu: <code className="bg-background px-1.5 py-0.5 rounded">1</code>, <code className="bg-background px-1.5 py-0.5 rounded">223</code></li>
+            <li>Cu alineat: <code className="bg-background px-1.5 py-0.5 rounded">15 alin. 2</code>, <code className="bg-background px-1.5 py-0.5 rounded">45 al. 3</code></li>
+            <li>Interval: <code className="bg-background px-1.5 py-0.5 rounded">45-49</code></li>
+            <li>Cu literă: <code className="bg-background px-1.5 py-0.5 rounded">223 lit. a</code></li>
           </ul>
         </div>
       </div>
 
       {selectedArticles.length > 0 && (
-        <div className="articles-display">
-          <div className="articles-header">
-            <h3>Articole adăugate ({selectedArticles.length})</h3>
-          </div>
-
-          <div className="article-chips">
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold">Articole adăugate ({selectedArticles.length})</h3>
+          <div className="flex flex-wrap gap-2">
             {selectedArticles.map((article) => (
-              <div key={article.number} className="article-chip">
-                <span className="chip-text">{article.reference}</span>
+              <Badge key={article.number} variant="secondary" className="gap-1 text-sm py-1.5 px-3">
+                {article.reference}
                 <button
-                  className="chip-remove"
                   onClick={() => handleRemove(article.number)}
                   aria-label="Șterge"
+                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5 transition-colors"
                 >
-                  ×
+                  <X className="h-3 w-3" />
                 </button>
-              </div>
+              </Badge>
             ))}
           </div>
         </div>
       )}
 
       {selectedArticles.length === 0 && (
-        <div className="empty-state">
-          <p>Niciun articol adăugat încă</p>
-          <p className="empty-hint">Introdu primul articol pentru a continua</p>
+        <div className="text-center py-8 text-muted-foreground space-y-1">
+          <p className="font-medium">Niciun articol adăugat încă</p>
+          <p className="text-sm">Introdu primul articol pentru a continua</p>
         </div>
       )}
     </div>
