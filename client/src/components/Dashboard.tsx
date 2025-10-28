@@ -1000,51 +1000,59 @@ Concluzia:
               </Card>
 
               {steps.length > 0 && (
-                <div className="case-section">
-                  <button
-                    className="btn-toggle-hints"
-                    onClick={() => setShowSteps(!showSteps)}
-                  >
-                    <Eye className="inline-block h-4 w-4 mr-1" />
-                    {showSteps ? 'Ascunde Pași de analiză' : 'Arată Pași de analiză'}
-                  </button>
+                <Card>
+                  <CardHeader>
+                    <button
+                      onClick={() => setShowSteps(!showSteps)}
+                      className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                    >
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Eye className="h-5 w-5" />
+                        Pași de analiză așteptați
+                      </CardTitle>
+                      <ChevronRight className={`h-5 w-5 transition-transform ${showSteps ? 'rotate-90' : ''}`} />
+                    </button>
+                  </CardHeader>
                   {showSteps && (
-                    <div className="hints-content">
-                      <h4>Pași de analiză așteptați:</h4>
-                      <ol className="analysis-steps">
+                    <CardContent>
+                      <ol className="list-decimal list-inside space-y-2">
                         {steps.map((step) => (
-                          <li key={step.id} className="analysis-step">
+                          <li key={step.id} className="text-foreground leading-relaxed">
                             {step.step_description}
                           </li>
                         ))}
                       </ol>
-                    </div>
+                    </CardContent>
                   )}
-                </div>
+                </Card>
               )}
 
               {hints.length > 0 && (
-                <div className="case-section">
-                  <button
-                    className="btn-toggle-hints"
-                    onClick={() => setShowHints(!showHints)}
-                  >
-                    <Lightbulb className="inline-block h-4 w-4 mr-1" />
-                    {showHints ? 'Ascunde Indicii' : 'Arată Indicii'}
-                  </button>
+                <Card>
+                  <CardHeader>
+                    <button
+                      onClick={() => setShowHints(!showHints)}
+                      className="flex items-center justify-between w-full text-left hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                    >
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Lightbulb className="h-5 w-5" />
+                        Indicii
+                      </CardTitle>
+                      <ChevronRight className={`h-5 w-5 transition-transform ${showHints ? 'rotate-90' : ''}`} />
+                    </button>
+                  </CardHeader>
                   {showHints && (
-                    <div className="hints-content">
-                      <h4>Indicii:</h4>
-                      <ul className="hints-list">
+                    <CardContent>
+                      <ul className="list-disc list-inside space-y-2">
                         {hints.map((hint) => (
-                          <li key={hint.id} className="hint-item">
+                          <li key={hint.id} className="text-foreground leading-relaxed">
                             {hint.hint_text}
                           </li>
                         ))}
                       </ul>
-                    </div>
+                    </CardContent>
                   )}
-                </div>
+                </Card>
               )}
             </div>
           )}
