@@ -51,6 +51,12 @@ export async function saveCaseToSupabase(caseData: CaseToSave): Promise<string> 
 
     if (caseError) {
       console.error('❌ Error inserting case:', caseError);
+
+      // Check if it's a duplicate case code error
+      if (caseError.code === '23505' && caseError.message.includes('cases_case_code_key')) {
+        throw new Error(`Codul cazului "${caseData.case_code}" există deja în baza de date. Te rog alege un alt cod.`);
+      }
+
       throw new Error(`Eroare la salvarea cazului: ${caseError.message}`);
     }
 

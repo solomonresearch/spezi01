@@ -66,6 +66,25 @@ Răspunde DOAR cu un obiect JSON valid în acest format exact:
   ]
 }`;
 
+const CLASSIFICATION_PROMPT = `Ești un expert juridic român. Analizează următorul caz juridic și clasifică-l în categoriile și subcategoriile potrivite.
+
+CATEGORII DISPONIBILE (civil):
+{categories}
+
+SUBCATEGORII DISPONIBILE (civil):
+{subcategories}
+
+CAZUL DE ANALIZAT:
+Titlu: {title}
+Problema juridică: {legal_problem}
+Descriere: {case_description}
+
+Analizează cazul și răspunde DOAR cu un obiect JSON în acest format exact:
+{
+  "category": "ID-ul categoriei potrivite (ex: civil_persons)",
+  "subcategory": "Subcategoria potrivită din listă sau null"
+}`;
+
 class CaseGeneratorService {
   private anthropic: Anthropic;
 
@@ -170,6 +189,70 @@ class CaseGeneratorService {
         throw new Error('Eroare la parsarea răspunsului AI. Încearcă din nou.');
       }
       throw new Error('Eroare la generarea cazului. Verifică conexiunea și încearcă din nou.');
+    }
+  }
+
+  /**
+   * Classify a generated case into appropriate category and subcategory
+   */
+  async classifyCase(
+    generatedCase: GeneratedCase,
+    availableCategories: { id: string; name: string }[],
+    availableSubcategories: string[]
+  ): Promise<{ category: string | null; subcategory: string | null }> {
+    try {
+      console.log('🤖 Classifying case with AI...');
+
+      const categoriesList = availableCategories.map(c => `- ${c.id}: ${c.name}`).join('\n');
+      const subcategoriesList = availableSubcategories.map(s => `- ${s}`).join('\n');
+
+      const prompt = CLASSIFICATION_PROMPT
+        .replace('{categories}', categoriesList)
+        .replace('{subcategories}', subcategoriesList)
+        .replace('{title}', generatedCase.title)
+        .replace('{legal_problem}', generatedCase.legal_problem)
+        .replace('{case_description}', generatedCase.case_description);
+
+      const response = await this.anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 512,
+        temperature: 0.3,
+        messages: [{
+          role: 'user',
+          content: prompt
+        }]
+      });
+
+      const content = response.content[0];
+      if (content.type !== 'text') {
+        throw new Error('Response nu este text');
+      }
+
+      // Extract JSON from response
+      let jsonText = content.text.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.slice(7);
+      }
+      if (jsonText.startsWith('```')) {
+        jsonText = jsonText.slice(3);
+      }
+      if (jsonText.endsWith('```')) {
+        jsonText = jsonText.slice(0, -3);
+      }
+      jsonText = jsonText.trim();
+
+      const classification = JSON.parse(jsonText);
+
+      console.log('✅ Case classified:', classification);
+      return {
+        category: classification.category || null,
+        subcategory: classification.subcategory || null
+      };
+
+    } catch (error) {
+      console.error('❌ Error classifying case:', error);
+      // Return null values if classification fails - don't block the generation
+      return { category: null, subcategory: null };
     }
   }
 }

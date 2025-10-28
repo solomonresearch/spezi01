@@ -1,8 +1,15 @@
 import { useState } from 'react';
-import { CheckCircle, Sparkles, Edit as EditIcon, AlertCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle, Sparkles, SquarePen, AlertCircle, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import type { GeneratedCase, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
 import type { CaseToSave } from '../../types/caseGenerator';
 import { saveCaseToSupabase } from '../../services/saveCaseToSupabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface GeneratedCaseEditorProps {
   caseData: GeneratedCase;
@@ -26,6 +33,7 @@ export const GeneratedCaseEditor = ({
   onReset
 }: GeneratedCaseEditorProps) => {
   const [editedCase, setEditedCase] = useState<GeneratedCase>(caseData);
+  const [editedCaseCode, setEditedCaseCode] = useState(caseCode);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -119,11 +127,17 @@ export const GeneratedCaseEditor = ({
 
   // Save to Supabase
   const handleSave = async () => {
+    // Validate case code
+    if (!editedCaseCode.trim()) {
+      setSaveError('Codul cazului este obligatoriu');
+      return;
+    }
+
     setIsSaving(true);
     setSaveError(null);
 
     const dataToSave: CaseToSave = {
-      case_code: caseCode,
+      case_code: editedCaseCode.trim().toUpperCase(),
       title: editedCase.title,
       level: difficultyLevel,
       week_number: weekNumber,
@@ -150,218 +164,282 @@ export const GeneratedCaseEditor = ({
 
   if (saveSuccess) {
     return (
-      <div className="save-success-screen">
-        <div className="success-icon">
-          <CheckCircle className="h-16 w-16" />
-        </div>
-        <h2>Caz salvat cu succes!</h2>
-        <div className="success-details">
-          <p><strong>Cod caz:</strong> {caseCode}</p>
-          <p><strong>Status:</strong> <span className="status-badge status-unverified">Neverificat</span></p>
-          <p className="success-hint">
-            Cazul a fost salvat în Supabase și este disponibil pentru studenți.
-            Statusul este "Neverificat" până când un expert juridic îl revizuiește.
-          </p>
-        </div>
-        <div className="success-actions">
-          <button onClick={onReset} className="btn-primary">
-            <Sparkles className="inline-block h-5 w-5 mr-2" />
+      <Card className="w-full max-w-2xl mx-auto mt-8">
+        <CardContent className="pt-8 pb-6 text-center space-y-6">
+          <div className="flex justify-center">
+            <CheckCircle className="h-20 w-20 text-green-600" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">Caz salvat cu succes!</h2>
+            <div className="space-y-1 text-muted-foreground">
+              <p className="flex items-center justify-center gap-2">
+                <strong className="text-foreground">Cod caz:</strong>
+                <Badge variant="outline" className="font-mono text-base">{editedCaseCode}</Badge>
+              </p>
+              <p className="flex items-center justify-center gap-2">
+                <strong className="text-foreground">Status:</strong>
+                <Badge variant="secondary" className="bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                  Neverificat
+                </Badge>
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto pt-2">
+              Cazul a fost salvat în Supabase și este disponibil pentru studenți.
+              Statusul este "Neverificat" până când un expert juridic îl revizuiește.
+            </p>
+          </div>
+          <Button onClick={onReset} className="gap-2" size="lg">
+            <Sparkles className="h-5 w-5" />
             Generează un caz nou
-          </button>
-        </div>
-      </div>
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="generated-case-editor">
-      <div className="editor-header">
-        <h2 className="flex items-center gap-2">
-          <EditIcon className="h-6 w-6" />
-          Editează cazul generat
-        </h2>
-        <div className="case-code-display">
-          Cod: <strong>{caseCode}</strong>
-          <span className="status-badge status-unverified">Neverificat</span>
-        </div>
-      </div>
-
-      {saveError && (
-        <div className="error-banner">
-          <AlertCircle className="inline-block h-4 w-4 mr-1" />
-          {saveError}
-        </div>
-      )}
-
-      {/* Title */}
-      <div className="editor-section">
-        <label className="editor-label">Titlul cazului</label>
-        <input
-          type="text"
-          className="editor-input"
-          value={editedCase.title}
-          onChange={(e) => updateField('title', e.target.value)}
-        />
-      </div>
-
-      {/* Legal Problem */}
-      <div className="editor-section">
-        <label className="editor-label">Problema juridică</label>
-        <textarea
-          className="editor-textarea"
-          rows={3}
-          value={editedCase.legal_problem}
-          onChange={(e) => updateField('legal_problem', e.target.value)}
-        />
-      </div>
-
-      {/* Case Description */}
-      <div className="editor-section">
-        <label className="editor-label">Descrierea cazului (Speta)</label>
-        <textarea
-          className="editor-textarea"
-          rows={8}
-          value={editedCase.case_description}
-          onChange={(e) => updateField('case_description', e.target.value)}
-        />
-        <div className="char-count">{editedCase.case_description.length} caractere</div>
-      </div>
-
-      {/* Question */}
-      <div className="editor-section">
-        <label className="editor-label">Întrebarea</label>
-        <textarea
-          className="editor-textarea"
-          rows={3}
-          value={editedCase.question}
-          onChange={(e) => updateField('question', e.target.value)}
-        />
-      </div>
-
-      {/* Analysis Steps */}
-      <div className="editor-section">
-        <div className="section-header">
-          <label className="editor-label">Pași de analiză ({editedCase.analysis_steps.length})</label>
-          <button onClick={addAnalysisStep} className="btn-add">+ Adaugă pas</button>
-        </div>
-
-        <div className="steps-list">
-          {editedCase.analysis_steps.map((step, index) => (
-            <div key={step.step_number} className="step-item">
-              <div className="step-header">
-                <span className="step-number">Pas {step.step_number}</span>
-                <div className="step-actions">
-                  <button
-                    onClick={() => moveAnalysisStep(index, 'up')}
-                    disabled={index === 0}
-                    className="btn-reorder"
-                    aria-label="Mută în sus"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => moveAnalysisStep(index, 'down')}
-                    disabled={index === editedCase.analysis_steps.length - 1}
-                    className="btn-reorder"
-                    aria-label="Mută în jos"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={() => removeAnalysisStep(index)}
-                    className="btn-remove"
-                    aria-label="Șterge"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <textarea
-                className="step-textarea"
-                rows={3}
-                value={step.description}
-                onChange={(e) => updateAnalysisStep(index, e.target.value)}
-                placeholder="Descrierea pasului de analiză..."
+    <Card className="w-full mt-8">
+      <CardHeader className="space-y-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <CardTitle className="flex items-center gap-2 text-2xl">
+            <SquarePen className="h-6 w-6" />
+            Editează cazul generat
+          </CardTitle>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <Label htmlFor="case-code" className="text-sm font-medium whitespace-nowrap">
+                Cod caz:
+              </Label>
+              <Input
+                id="case-code"
+                value={editedCaseCode}
+                onChange={(e) => setEditedCaseCode(e.target.value.toUpperCase())}
+                className="font-mono font-semibold w-32"
+                placeholder="CIV1ABC"
               />
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Hints */}
-      <div className="editor-section">
-        <div className="section-header">
-          <label className="editor-label">Indicii ({editedCase.hints.length})</label>
-          <button onClick={addHint} className="btn-add">+ Adaugă indiciu</button>
+            <Badge variant="secondary" className="bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100 whitespace-nowrap">
+              Neverificat
+            </Badge>
+          </div>
         </div>
 
-        <div className="hints-list">
-          {editedCase.hints.map((hint, index) => (
-            <div key={hint.hint_number} className="hint-item">
-              <div className="hint-header">
-                <span className="hint-number">Indiciu {hint.hint_number}</span>
-                <div className="hint-actions">
-                  <button
-                    onClick={() => moveHint(index, 'up')}
-                    disabled={index === 0}
-                    className="btn-reorder"
-                    aria-label="Mută în sus"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    onClick={() => moveHint(index, 'down')}
-                    disabled={index === editedCase.hints.length - 1}
-                    className="btn-reorder"
-                    aria-label="Mută în jos"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    onClick={() => removeHint(index)}
-                    className="btn-remove"
-                    aria-label="Șterge"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-              <textarea
-                className="hint-textarea"
-                rows={2}
-                value={hint.text}
-                onChange={(e) => updateHint(index, e.target.value)}
-                placeholder="Textul indiciului..."
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+        {saveError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{saveError}</AlertDescription>
+          </Alert>
+        )}
+      </CardHeader>
 
-      {/* Actions */}
-      <div className="editor-actions">
-        <button onClick={onReset} className="btn-secondary">
-          <RefreshCw className="inline-block h-5 w-5 mr-2" />
-          Anulează și generează alt caz
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="btn-save"
-        >
-          {isSaving ? (
-            <>
-              <span className="spinner"></span>
-              <span>Se salvează...</span>
-            </>
-          ) : (
-            <>
-              <CheckCircle className="inline-block h-5 w-5 mr-2" />
-              Trimite către Supabase
-            </>
-          )}
-        </button>
-      </div>
-    </div>
+      <CardContent className="space-y-6">
+        {/* Title */}
+        <div className="space-y-2">
+          <Label htmlFor="title">Titlul cazului</Label>
+          <Input
+            id="title"
+            value={editedCase.title}
+            onChange={(e) => updateField('title', e.target.value)}
+            placeholder="Titlu descriptiv și captivant..."
+          />
+        </div>
+
+        {/* Legal Problem */}
+        <div className="space-y-2">
+          <Label htmlFor="legal-problem">Problema juridică</Label>
+          <Textarea
+            id="legal-problem"
+            rows={3}
+            value={editedCase.legal_problem}
+            onChange={(e) => updateField('legal_problem', e.target.value)}
+            placeholder="Rezumat al problemei juridice..."
+          />
+        </div>
+
+        {/* Case Description */}
+        <div className="space-y-2">
+          <Label htmlFor="case-description">Descrierea cazului (Speta)</Label>
+          <Textarea
+            id="case-description"
+            rows={8}
+            value={editedCase.case_description}
+            onChange={(e) => updateField('case_description', e.target.value)}
+            placeholder="Descrierea completă a cazului..."
+            className="resize-y"
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {editedCase.case_description.length} caractere
+          </p>
+        </div>
+
+        {/* Question */}
+        <div className="space-y-2">
+          <Label htmlFor="question">Întrebarea</Label>
+          <Textarea
+            id="question"
+            rows={3}
+            value={editedCase.question}
+            onChange={(e) => updateField('question', e.target.value)}
+            placeholder="Întrebarea juridică pentru student..."
+          />
+        </div>
+
+        {/* Analysis Steps */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">
+              Pași de analiză ({editedCase.analysis_steps.length})
+            </Label>
+            <Button onClick={addAnalysisStep} variant="outline" size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Adaugă pas
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {editedCase.analysis_steps.map((step, index) => (
+              <Card key={step.step_number} className="border-l-4 border-l-blue-500">
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="default" className="text-sm">
+                      Pas {step.step_number}
+                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        onClick={() => moveAnalysisStep(index, 'up')}
+                        disabled={index === 0}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Mută în sus"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => moveAnalysisStep(index, 'down')}
+                        disabled={index === editedCase.analysis_steps.length - 1}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Mută în jos"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => removeAnalysisStep(index)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title="Șterge"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Textarea
+                    rows={3}
+                    value={step.description}
+                    onChange={(e) => updateAnalysisStep(index, e.target.value)}
+                    placeholder="Descrierea pasului de analiză..."
+                    className="resize-y"
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Hints */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">
+              Indicii ({editedCase.hints.length})
+            </Label>
+            <Button onClick={addHint} variant="outline" size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Adaugă indiciu
+            </Button>
+          </div>
+
+          <div className="space-y-3">
+            {editedCase.hints.map((hint, index) => (
+              <Card key={hint.hint_number} className="border-l-4 border-l-amber-500">
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="secondary" className="text-sm">
+                      Indiciu {hint.hint_number}
+                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        onClick={() => moveHint(index, 'up')}
+                        disabled={index === 0}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Mută în sus"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => moveHint(index, 'down')}
+                        disabled={index === editedCase.hints.length - 1}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Mută în jos"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => removeHint(index)}
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title="Șterge"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Textarea
+                    rows={2}
+                    value={hint.text}
+                    onChange={(e) => updateHint(index, e.target.value)}
+                    placeholder="Textul indiciului..."
+                    className="resize-y"
+                  />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t">
+          <Button onClick={onReset} variant="outline" size="lg" className="gap-2">
+            <RefreshCw className="h-5 w-5" />
+            Anulează și generează alt caz
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            size="lg"
+            className="gap-2 bg-green-600 hover:bg-green-700"
+          >
+            {isSaving ? (
+              <>
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Se salvează...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-5 w-5" />
+                Trimite către Supabase
+              </>
+            )}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Bot } from 'lucide-react';
 import type { CaseGeneratorState, GeneratedCase, LegalDomain, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
-import { generateCaseCode } from '../../constants/caseGeneratorData';
+import { generateCaseCode, CATEGORIES, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
 import { caseGeneratorService } from '../../services/caseGeneratorService';
 import { DomainSelector } from './DomainSelector';
 import { CategoryGrid } from './CategoryGrid';
@@ -97,10 +97,37 @@ export const CaseGenerator = () => {
       const generatedCase = await caseGeneratorService.generateCase(state);
       const caseCode = generateCaseCode(state.selectedDomain!, state.weekNumber);
 
+      // If categories or subcategories are missing, use AI to classify
+      let finalCategories = state.selectedCategories;
+      let finalSubcategory = state.subcategory;
+
+      if ((finalCategories.length === 0 || !finalSubcategory) && state.selectedDomain === 'civil') {
+        console.log('📊 Categories or subcategories missing, using AI to classify...');
+
+        const domainCategories = CATEGORIES.filter(c => c.domain === state.selectedDomain);
+        const classification = await caseGeneratorService.classifyCase(
+          generatedCase,
+          domainCategories,
+          CIVIL_SUBCATEGORIES
+        );
+
+        if (classification.category && finalCategories.length === 0) {
+          finalCategories = [classification.category];
+          console.log('✅ AI assigned category:', classification.category);
+        }
+
+        if (classification.subcategory && !finalSubcategory) {
+          finalSubcategory = classification.subcategory;
+          console.log('✅ AI assigned subcategory:', classification.subcategory);
+        }
+      }
+
       setState(prev => ({
         ...prev,
         generatedCase,
         caseCode,
+        selectedCategories: finalCategories,
+        subcategory: finalSubcategory,
         isGenerating: false
       }));
     } catch (error) {
