@@ -115,7 +115,7 @@ export const ConfigurationPanel = ({
               <SelectTrigger>
                 <SelectValue placeholder="Selectează subcategoria..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
                 {getAllCivilSubcategories().map((subcatOption) => (
                   <SelectItem key={subcatOption} value={subcatOption}>
                     {subcatOption}
@@ -139,7 +139,7 @@ export const ConfigurationPanel = ({
               <SelectTrigger>
                 <SelectValue placeholder="Selectează subcategoria..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
                 {getAllConstitutionalSubcategories().map((subcatOption) => (
                   <SelectItem key={subcatOption} value={subcatOption}>
                     {subcatOption}

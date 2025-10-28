@@ -337,7 +337,7 @@ export const GeneratedCaseEditor = ({
               <SelectTrigger id="category">
                 <SelectValue placeholder="Alege categoria..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
                 {availableCategories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}
@@ -362,7 +362,7 @@ export const GeneratedCaseEditor = ({
               <SelectTrigger id="subcategory">
                 <SelectValue placeholder="Alege subcategoria..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
                 {availableSubcategories.map((subcat) => (
                   <SelectItem key={subcat} value={subcat}>
                     {subcat}
