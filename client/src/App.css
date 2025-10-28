@@ -1163,16 +1163,26 @@ body {
     width: 100%;
   }
 
+  .difficulty-label {
+    display: block;
+    margin-bottom: 8px;
+  }
+
   .difficulty-slider {
-    gap: 8px;
+    display: flex;
+    gap: 6px;
   }
 
   .difficulty-option {
-    padding: 8px 12px;
+    padding: 6px 10px;
   }
 
   .difficulty-text {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .hammer-icon {
+    font-size: 14px;
   }
 
   .solution-textarea {
@@ -1725,44 +1735,45 @@ body {
   }
 }
 
-/* Difficulty Selector */
+/* Difficulty Selector - Compact Version */
 .difficulty-selector {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .difficulty-label {
-  display: block;
-  font-size: 14px;
+  display: inline-block;
+  font-size: 12px;
   font-weight: 600;
   color: #374151;
-  margin-bottom: 10px;
+  margin-right: 12px;
+  margin-bottom: 0;
 }
 
 .difficulty-slider {
-  display: flex;
-  gap: 12px;
+  display: inline-flex;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .difficulty-option {
-  flex: 1;
-  min-width: 140px;
-  padding: 12px 16px;
+  flex: 0;
+  min-width: auto;
+  padding: 6px 12px;
   background: #f3f4f6;
   border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .difficulty-option:hover {
   background: #e0e7ff;
   border-color: #818cf8;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .difficulty-option.active {
@@ -1773,12 +1784,12 @@ body {
 }
 
 .hammer-icon {
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1;
 }
 
 .difficulty-text {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
 }
 

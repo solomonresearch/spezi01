@@ -508,6 +508,122 @@ Concluzia:
             </div>
           ) : (
             <div className="case-display">
+              {/* Assessment Module */}
+              <div className="assessment-module">
+                <button
+                  className="assessment-header"
+                  onClick={toggleAssessmentModule}
+                >
+                  <span className="assessment-title">⚡📖 Rezolvă speța!</span>
+                  <span className="assessment-toggle-icon">{assessmentExpanded ? '▼' : '▶'}</span>
+                </button>
+
+                {assessmentExpanded && (
+                  <div className="assessment-content">
+                    {/* Difficulty Slider */}
+                    <div className="difficulty-selector">
+                      <label className="difficulty-label">Exigența corectorului:</label>
+                      <div className="difficulty-slider">
+                        <button
+                          className={`difficulty-option ${difficultyLevel === 1 ? 'active' : ''}`}
+                          onClick={() => handleDifficultyChange(1)}
+                          title="Ciocan Juridic Ușor"
+                        >
+                          <span className="hammer-icon">🔨</span>
+                          <span className="difficulty-text">Ușor</span>
+                        </button>
+                        <button
+                          className={`difficulty-option ${difficultyLevel === 3 ? 'active' : ''}`}
+                          onClick={() => handleDifficultyChange(3)}
+                          title="Ciocan Juridic Mediu"
+                        >
+                          <span className="hammer-icon">🔨🔨🔨</span>
+                          <span className="difficulty-text">Mediu</span>
+                        </button>
+                        <button
+                          className={`difficulty-option ${difficultyLevel === 5 ? 'active' : ''}`}
+                          onClick={() => handleDifficultyChange(5)}
+                          title="Ciocan Juridic Greu"
+                        >
+                          <span className="hammer-icon">🔨🔨🔨🔨🔨</span>
+                          <span className="difficulty-text">Greu</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Solution Text Area */}
+                    <div className="solution-input-section">
+                      <label className="solution-label">Soluția Ta:</label>
+                      <textarea
+                        className="solution-textarea"
+                        value={solutionText}
+                        onChange={(e) => setSolutionText(e.target.value)}
+                        placeholder={SOLUTION_TEMPLATE}
+                        rows={15}
+                        disabled={isDetecting || isAssessing}
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="assessment-actions">
+                      <button
+                        className="btn-assess"
+                        onClick={handleAssessmentSubmit}
+                        disabled={!solutionText.trim() || isDetecting || isAssessing}
+                      >
+                        {isDetecting ? 'Verificare AI în curs...' : isAssessing ? 'Evaluare în curs...' : 'Evaluează Soluția'}
+                      </button>
+                    </div>
+
+                    {/* Loading Spinner */}
+                    {(isDetecting || isAssessing) && (
+                      <div className="assessment-loading">
+                        <div className="spinner"></div>
+                        <p>{isDetecting ? 'Se verifică autenticitatea textului...' : 'Se evaluează soluția...'}</p>
+                      </div>
+                    )}
+
+                    {/* AI Detection Failed Message */}
+                    {aiDetectionPassed === false && (
+                      <div className="ai-detection-failed">
+                        <div className="eggplant-message">
+                          <span className="eggplant-emoji">🚫🤖</span>
+                          <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? 💀</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Error Message */}
+                    {assessmentError && (
+                      <div className="assessment-error">
+                        <p>{assessmentError}</p>
+                      </div>
+                    )}
+
+                    {/* Assessment Result */}
+                    {assessmentResult && aiDetectionPassed === true && (
+                      <div className="assessment-result">
+                        <div className="result-header">
+                          <h3>✅ Evaluare Completă</h3>
+                          <button
+                            className="btn-reset-assessment"
+                            onClick={() => {
+                              resetAssessment();
+                              setSolutionText('');
+                            }}
+                          >
+                            Resetează
+                          </button>
+                        </div>
+                        <div className="result-content">
+                          <pre className="result-text">{assessmentResult}</pre>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="case-header">
                 <div className="case-title-section">
                   <h2 className="case-title">
@@ -593,124 +709,6 @@ Concluzia:
                           </li>
                         ))}
                       </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Assessment Module */}
-          {caseData && (
-            <div className="assessment-module">
-              <button
-                className="assessment-header"
-                onClick={toggleAssessmentModule}
-              >
-                <span className="assessment-title">✅ Verificare Soluție</span>
-                <span className="assessment-toggle-icon">{assessmentExpanded ? '▼' : '▶'}</span>
-              </button>
-
-              {assessmentExpanded && (
-                <div className="assessment-content">
-                  {/* Difficulty Slider */}
-                  <div className="difficulty-selector">
-                    <label className="difficulty-label">Nivelul de Exigență:</label>
-                    <div className="difficulty-slider">
-                      <button
-                        className={`difficulty-option ${difficultyLevel === 1 ? 'active' : ''}`}
-                        onClick={() => handleDifficultyChange(1)}
-                        title="Ciocan Juridic Ușor"
-                      >
-                        <span className="hammer-icon">🔨</span>
-                        <span className="difficulty-text">Ușor</span>
-                      </button>
-                      <button
-                        className={`difficulty-option ${difficultyLevel === 3 ? 'active' : ''}`}
-                        onClick={() => handleDifficultyChange(3)}
-                        title="Ciocan Juridic Mediu"
-                      >
-                        <span className="hammer-icon">🔨🔨🔨</span>
-                        <span className="difficulty-text">Mediu</span>
-                      </button>
-                      <button
-                        className={`difficulty-option ${difficultyLevel === 5 ? 'active' : ''}`}
-                        onClick={() => handleDifficultyChange(5)}
-                        title="Ciocan Juridic Greu"
-                      >
-                        <span className="hammer-icon">🔨🔨🔨🔨🔨</span>
-                        <span className="difficulty-text">Greu</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Solution Text Area */}
-                  <div className="solution-input-section">
-                    <label className="solution-label">Soluția Ta:</label>
-                    <textarea
-                      className="solution-textarea"
-                      value={solutionText}
-                      onChange={(e) => setSolutionText(e.target.value)}
-                      placeholder={SOLUTION_TEMPLATE}
-                      rows={15}
-                      disabled={isDetecting || isAssessing}
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="assessment-actions">
-                    <button
-                      className="btn-assess"
-                      onClick={handleAssessmentSubmit}
-                      disabled={!solutionText.trim() || isDetecting || isAssessing}
-                    >
-                      {isDetecting ? 'Verificare AI în curs...' : isAssessing ? 'Evaluare în curs...' : 'Evaluează Soluția'}
-                    </button>
-                  </div>
-
-                  {/* Loading Spinner */}
-                  {(isDetecting || isAssessing) && (
-                    <div className="assessment-loading">
-                      <div className="spinner"></div>
-                      <p>{isDetecting ? 'Se verifică autenticitatea textului...' : 'Se evaluează soluția...'}</p>
-                    </div>
-                  )}
-
-                  {/* AI Detection Failed Message */}
-                  {aiDetectionPassed === false && (
-                    <div className="ai-detection-failed">
-                      <div className="eggplant-message">
-                        <span className="eggplant-emoji">🚫🤖</span>
-                        <p>No, pe bune! Dar de ce folosesti AI sa rezolvi? 💀</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Error Message */}
-                  {assessmentError && (
-                    <div className="assessment-error">
-                      <p>{assessmentError}</p>
-                    </div>
-                  )}
-
-                  {/* Assessment Result */}
-                  {assessmentResult && aiDetectionPassed === true && (
-                    <div className="assessment-result">
-                      <div className="result-header">
-                        <h3>✅ Evaluare Completă</h3>
-                        <button
-                          className="btn-reset-assessment"
-                          onClick={() => {
-                            resetAssessment();
-                            setSolutionText('');
-                          }}
-                        >
-                          Resetează
-                        </button>
-                      </div>
-                      <div className="result-content">
-                        <pre className="result-text">{assessmentResult}</pre>
-                      </div>
                     </div>
                   )}
                 </div>
