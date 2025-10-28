@@ -1,6 +1,6 @@
 // Comprehensive Penal Law Categories Structure
-// Based on Romanian Penal Code (Codul Penal) - Official Table of Contents
-// Structure: Parte > Titlu > Capitol > Secțiune
+// Based on Romanian Penal Code (Codul Penal)
+// Pattern matches civilLawCategories.ts for consistency
 
 export interface PenalLawCategory {
   id: string;
@@ -8,169 +8,152 @@ export interface PenalLawCategory {
   description: string;
   articles: string[];
   subcategories: string[];
-  part?: 'GENERALĂ' | 'SPECIALĂ'; // Partea GENERALĂ or Partea SPECIALĂ
 }
 
-// ==================== PARTEA GENERALĂ ====================
-
 export const PENAL_LAW_CATEGORIES: PenalLawCategory[] = [
-  // Titlul I - Legea penală și limitele ei de aplicare
+  // ==================== PARTEA GENERALĂ ====================
+
   {
-    id: "titlul_i_legea_penala",
-    name: "Titlul I - Legea penală și limitele ei de aplicare",
+    id: "legea_penala",
+    name: "Legea penală și limitele ei de aplicare",
     description: "Principii generale, aplicarea legii penale în timp și spațiu",
     articles: ["Art. 1-14 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Principii generale",
-      "Capitolul II - Aplicarea legii penale",
-      "Secțiunea 1 - Aplicarea legii penale în timp",
-      "Secțiunea a 2-a - Aplicarea legii penale în spațiu"
+      "Principii generale (legalitate, sancțiuni)",
+      "Aplicarea legii penale în timp",
+      "Aplicarea legii penale în spațiu",
+      "Teritorialitatea și personalitatea legii penale",
+      "Universalitatea și realitatea legii penale"
     ]
   },
 
-  // Titlul II - Infracțiunea
   {
-    id: "titlul_ii_infractiunea",
-    name: "Titlul II - Infracțiunea",
+    id: "infractiunea",
+    name: "Infracțiunea",
     description: "Trăsături esențiale, cauze justificative, tentativa, participanții",
     articles: ["Art. 15-52 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Dispoziții generale",
-      "Capitolul II - Cauzele justificative",
-      "Capitolul III - Cauzele de neimputabilitate",
-      "Capitolul IV - Tentativa",
-      "Capitolul V - Unitatea și pluralitatea de infracțiuni",
-      "Capitolul VI - Autorul și participanții"
+      "Trăsăturile esențiale ale infracțiunii",
+      "Vinovăția (intenție, culpă, intenție depășită)",
+      "Cauzele justificative (legitimă apărare, stare de necesitate)",
+      "Cauzele de neimputabilitate",
+      "Tentativa",
+      "Unitatea și pluralitatea de infracțiuni",
+      "Autorul și participanții (autor, instigator, complice)"
     ]
   },
 
-  // Titlul III - Pedepsele
   {
-    id: "titlul_iii_pedepsele",
-    name: "Titlul III - Pedepsele",
-    description: "Categorii, pedeapsa accesorie, individualizare, circumstanțe atenuante/agravante",
+    id: "pedepsele",
+    name: "Pedepsele",
+    description: "Categorii, pedeapsa accesorie, individualizare, circumstanțe",
     articles: ["Art. 53-106 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Categoriile pedepselor",
-      "Capitolul II - Pedepsele principale",
-      "Secțiunea 1 - Detențiunea pe viață",
-      "Secțiunea a 2-a - Închisoarea",
-      "Secțiunea a 3-a - Amenda",
-      "Capitolul III - Pedeapsa accesorie și pedepsele complementare",
-      "Secțiunea 1 - Pedeapsa accesorie",
-      "Secțiunea a 2-a - Pedepsele complementare",
-      "Capitolul IV - Calculul duratei pedepselor",
-      "Capitolul V - Individualizarea pedepselor",
-      "Secțiunea 1 - Dispoziții generale",
-      "Secțiunea a 2-a - Circumstanțele atenuante și circumstanțele agravante",
-      "Secțiunea a 3-a - Renunțarea la aplicarea pedepsei",
-      "Secțiunea a 4-a - Amânarea aplicării pedepsei",
-      "Secțiunea a 5-a - Suspendarea executării pedepsei sub supraveghere",
-      "Secțiunea a 6-a - Liberarea condiționată"
+      "Categoriile pedepselor",
+      "Detențiunea pe viață",
+      "Închisoarea",
+      "Amenda",
+      "Pedeapsa accesorie și pedepsele complementare",
+      "Circumstanțe atenuante și agravante",
+      "Renunțarea la aplicarea pedepsei",
+      "Amânarea aplicării pedepsei",
+      "Suspendarea executării pedepsei sub supraveghere",
+      "Liberarea condiționată"
     ]
   },
 
-  // Titlul IV - Măsurile de siguranță
   {
-    id: "titlul_iv_masuri_siguranta",
-    name: "Titlul IV - Măsurile de siguranță",
+    id: "masuri_siguranta",
+    name: "Măsurile de siguranță",
     description: "Dispoziții generale, regimul măsurilor de siguranță",
     articles: ["Art. 107-112 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Dispoziții generale",
-      "Capitolul II - Regimul măsurilor de siguranță"
+      "Dispoziții generale privind măsurile de siguranță",
+      "Regimul măsurilor de siguranță",
+      "Internarea medicală",
+      "Obligarea la tratament medical"
     ]
   },
 
-  // Titlul V - Minoritatea
   {
-    id: "titlul_v_minoritatea",
-    name: "Titlul V - Minoritatea",
+    id: "minoritatea",
+    name: "Minoritatea",
     description: "Răspunderea penală a minorului, măsuri educative",
     articles: ["Art. 113-134 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Regimul răspunderii penale a minorului",
-      "Capitolul II - Regimul măsurilor educative neprivative de libertate",
-      "Capitolul III - Regimul măsurilor educative privative de libertate",
-      "Capitolul IV - Dispoziții comune"
+      "Regimul răspunderii penale a minorului",
+      "Măsuri educative neprivative de libertate",
+      "Măsuri educative privative de libertate",
+      "Internarea într-un centru educativ",
+      "Internarea într-un centru de detenție"
     ]
   },
 
-  // Titlul VI - Răspunderea penală a persoanei juridice
   {
-    id: "titlul_vi_persoana_juridica",
-    name: "Titlul VI - Răspunderea penală a persoanei juridice",
-    description: "Condițiile și regimul răspunderii penale a persoanei juridice",
+    id: "persoana_juridica",
+    name: "Răspunderea penală a persoanei juridice",
+    description: "Condițiile și regimul răspunderii penale",
     articles: ["Art. 135-151 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
-      "Capitolul I - Dispoziții generale",
-      "Capitolul II - Regimul pedepselor complementare aplicate persoanei juridice",
-      "Capitolul III - Dispoziții comune"
+      "Condițiile răspunderii penale a persoanei juridice",
+      "Pedepsele complementare aplicate persoanei juridice",
+      "Dizolvarea persoanei juridice",
+      "Suspendarea activității",
+      "Interdicții speciale"
     ]
   },
 
-  // Titlul VII - Cauzele care înlătură răspunderea penală
   {
-    id: "titlul_vii_inlaturare_raspundere",
-    name: "Titlul VII - Cauzele care înlătură răspunderea penală",
-    description: "Amnistie, prescripție, lipsa plângerii prealabile, împăcare",
+    id: "inlaturare_raspundere",
+    name: "Cauze care înlătură răspunderea penală",
+    description: "Amnistie, prescripție, lipsa plângerii prealabile",
     articles: ["Art. 152-159 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
       "Amnistia",
       "Prescripția răspunderii penale",
       "Lipsa plângerii prealabile",
       "Retragerea plângerii prealabile",
-      "Împăcarea"
+      "Împăcarea părților"
     ]
   },
 
-  // Titlul VIII - Cauzele care înlătură sau modifică executarea pedepsei
   {
-    id: "titlul_viii_executare_pedeapsa",
-    name: "Titlul VIII - Cauzele care înlătură sau modifică executarea pedepsei",
-    description: "Grațierea, amnistia post-condamnatorie, prescripția executării pedepsei",
+    id: "executare_pedeapsa",
+    name: "Cauze care înlătură executarea pedepsei",
+    description: "Grațierea, amnistia post-condamnatorie, prescripția",
     articles: ["Art. 160-164 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
       "Grațierea",
       "Amnistia post-condamnatorie",
-      "Prescripția executării pedepsei"
+      "Prescripția executării pedepsei",
+      "Decesul condamnatului"
     ]
   },
 
-  // Titlul IX - Cauzele care înlătură consecințele condamnării
   {
-    id: "titlul_ix_consecinte_condamnare",
-    name: "Titlul IX - Cauzele care înlătură consecințele condamnării",
-    description: "Reabilitarea, reabilitarea de drept, reabilitarea judecătorească",
+    id: "consecinte_condamnare",
+    name: "Cauze care înlătură consecințele condamnării",
+    description: "Reabilitarea de drept și judecătorească",
     articles: ["Art. 165-171 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
       "Reabilitarea de drept",
       "Reabilitarea judecătorească",
-      "Efectele reabilitării"
+      "Efectele reabilitării",
+      "Reabilitarea condamnatului decedat"
     ]
   },
 
-  // Titlul X - Înțelesul unor termeni sau expresii în legea penală
   {
-    id: "titlul_x_inteles_termeni",
-    name: "Titlul X - Înțelesul unor termeni sau expresii în legea penală",
-    description: "Definiții și clarificări terminologice",
+    id: "inteles_termeni",
+    name: "Înțelesul unor termeni în legea penală",
+    description: "Definiții legale și clarificări terminologice",
     articles: ["Art. 172-187 C.pen."],
-    part: "GENERALĂ",
     subcategories: [
       "Funcționar public",
       "Înscris",
       "Valori",
       "Violență",
+      "Amenințare",
       "Bunuri",
       "Alte definiții legale"
     ]
@@ -178,202 +161,214 @@ export const PENAL_LAW_CATEGORIES: PenalLawCategory[] = [
 
   // ==================== PARTEA SPECIALĂ ====================
 
-  // Titlul I - Infracțiuni contra persoanei
   {
-    id: "titlul_i_contra_persoanei",
-    name: "Titlul I - Infracțiuni contra persoanei",
-    description: "Infracțiuni contra vieții, integrității corporale, libertății persoanei",
+    id: "contra_persoanei",
+    name: "Infracțiuni contra persoanei",
+    description: "Infracțiuni contra vieții, integrității corporale, libertății",
     articles: ["Art. 188-227 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni contra vieții",
-      "Capitolul II - Infracțiuni contra integrității corporale sau sănătății",
-      "Capitolul III - Infracțiuni săvârșite asupra unui membru de familie",
-      "Capitolul IV - Agresiuni asupra fătului",
-      "Capitolul V - Infracțiuni privind obligația de asistență a celor în primejdie",
-      "Capitolul VI - Infracțiuni contra libertății persoanei",
-      "Capitolul VII - Traficul și exploatarea persoanelor vulnerabile",
-      "Capitolul VIII - Infracțiuni contra libertății și integrității sexuale",
-      "Capitolul IX - Infracțiuni ce aduc atingere domiciliului și vieții private"
+      "Infracțiuni contra vieții (omor, omor calificat, pruncucidere)",
+      "Infracțiuni contra integrității corporale (vătămare, loviri)",
+      "Infracțiuni săvârșite asupra unui membru de familie (violență domestică)",
+      "Agresiuni asupra fătului (întrerupere ilegală a sarcinii)",
+      "Infracțiuni privind asistența celor în primejdie",
+      "Infracțiuni contra libertății persoanei (lipsire de libertate, șantaj)",
+      "Traficul și exploatarea persoanelor vulnerabile",
+      "Infracțiuni contra libertății sexuale (viol, agresiune sexuală)",
+      "Infracțiuni contra vieții private și domiciliului"
     ]
   },
 
-  // Titlul II - Infracțiuni contra patrimoniului
   {
-    id: "titlul_ii_contra_patrimoniului",
-    name: "Titlul II - Infracțiuni contra patrimoniului",
-    description: "Furt, tâlhărie, înșelăciune, fraude și alte infracțiuni patrimoniale",
+    id: "contra_patrimoniului",
+    name: "Infracțiuni contra patrimoniului",
+    description: "Furt, tâlhărie, înșelăciune, fraude",
     articles: ["Art. 228-256 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Furtul",
-      "Capitolul II - Tâlhăria și pirateria",
-      "Capitolul III - Infracțiuni contra patrimoniului prin nesocotirea încrederii",
-      "Capitolul IV - Fraude comise prin sisteme informatice și mijloace de plată electronice",
-      "Capitolul V - Distrugerea și tulburarea de posesie"
+      "Furtul (furt simplu, furt calificat)",
+      "Tâlhăria și pirateria",
+      "Înșelăciune",
+      "Abuz de încredere",
+      "Gestiune frauduloasă",
+      "Fraude comise prin sisteme informatice",
+      "Fraude prin mijloace de plată electronice",
+      "Distrugerea bunurilor",
+      "Tulburarea de posesie"
     ]
   },
 
-  // Titlul III - Infracțiuni privind autoritatea și frontiera de stat
   {
-    id: "titlul_iii_autoritate_frontiera",
-    name: "Titlul III - Infracțiuni privind autoritatea și frontiera de stat",
+    id: "autoritate_frontiera",
+    name: "Infracțiuni privind autoritatea și frontiera",
     description: "Ultraj, evadare, trecerea frauduloasă a frontierei",
     articles: ["Art. 257-265 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni contra autorității",
-      "Capitolul II - Infracțiuni privind frontiera de stat"
+      "Ultrajul contra autorității",
+      "Evadarea",
+      "Violare de domiciliu de către funcționar",
+      "Trecerea frauduloasă a frontierei",
+      "Nerespectarea regimului frontierei de stat"
     ]
   },
 
-  // Titlul IV - Infracțiuni contra înfăptuirii justiției
   {
-    id: "titlul_iv_infaptuirea_justitiei",
-    name: "Titlul IV - Infracțiuni contra înfăptuirii justiției",
-    description: "Mărturie mincinoasă, favorizarea infractorului, ultraj",
+    id: "infaptuirea_justitiei",
+    name: "Infracțiuni contra înfăptuirii justiției",
+    description: "Mărturie mincinoasă, favorizarea infractorului",
     articles: ["Art. 266-288 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
       "Mărturie mincinoasă",
       "Favorizarea infractorului",
       "Sustragerea de la urmărire sau judecată",
       "Îngrădirea exercitării drepturilor",
-      "Ultraj și alte infracțiuni"
+      "Autoacuzarea",
+      "Denunțarea calomnioasă",
+      "Ultrajul în instanță"
     ]
   },
 
-  // Titlul V - Infracțiuni de corupție și de serviciu
   {
-    id: "titlul_v_coruptie_serviciu",
-    name: "Titlul V - Infracțiuni de corupție și de serviciu",
-    description: "Luare/dare de mită, trafic de influență, abuz în serviciu",
+    id: "coruptie_serviciu",
+    name: "Infracțiuni de corupție și de serviciu",
+    description: "Luare/dare de mită, trafic de influență, abuz",
     articles: ["Art. 289-309 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni de corupție",
-      "Capitolul II - Infracțiuni de serviciu"
+      "Luarea de mită",
+      "Darea de mită",
+      "Traficul de influență",
+      "Cumpărarea de influență",
+      "Abuzul în serviciu",
+      "Neglijența în serviciu",
+      "Uzurparea funcției",
+      "Conflictul de interese"
     ]
   },
 
-  // Titlul VI - Infracțiuni de fals
   {
-    id: "titlul_vi_fals",
-    name: "Titlul VI - Infracțiuni de fals",
-    description: "Falsificarea de monede, timbre, înscrisuri și alte valori",
+    id: "fals",
+    name: "Infracțiuni de fals",
+    description: "Falsificarea de monede, timbre, înscrisuri",
     articles: ["Art. 310-328 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Falsificarea de monede, timbre sau de alte valori",
-      "Capitolul II - Falsificarea instrumentelor de autentificare sau de marcare",
-      "Capitolul III - Falsuri în înscrisuri"
+      "Falsificarea de monede",
+      "Falsificarea de timbre sau mărci valorice",
+      "Falsificarea instrumentelor de autentificare",
+      "Fals intelectual",
+      "Fals material în înscrisuri oficiale",
+      "Uz de fals",
+      "Fals în declarații",
+      "Falsul informatic"
     ]
   },
 
-  // Titlul VII - Infracțiuni contra siguranței publice
   {
-    id: "titlul_vii_siguranta_publica",
-    name: "Titlul VII - Infracțiuni contra siguranței publice",
-    description: "Siguranța circulației, regimul armelor, sănătate publică, securitate IT",
+    id: "siguranta_publica",
+    name: "Infracțiuni contra siguranței publice",
+    description: "Siguranța circulației, regimul armelor, sănătate",
     articles: ["Art. 329-366 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni contra siguranței circulației pe căile ferate",
-      "Capitolul II - Infracțiuni contra siguranței circulației pe drumurile publice",
-      "Capitolul III - Nerespectarea regimului armelor, munițiilor, materialelor nucleare și al materiilor explozive",
-      "Capitolul IV - Infracțiuni privitoare la regimul stabilit pentru alte activități reglementate de lege",
-      "Capitolul V - Infracțiuni contra sănătății publice",
-      "Capitolul VI - Infracțiuni contra siguranței și integrității sistemelor și datelor informatice"
+      "Infracțiuni contra siguranței circulației pe căile ferate",
+      "Infracțiuni contra siguranței circulației rutiere",
+      "Conducere sub influența alcoolului sau drogurilor",
+      "Nerespectarea regimului armelor și munițiilor",
+      "Nerespectarea regimului materiilor nucleare",
+      "Nerespectarea regimului materiilor explozive",
+      "Infracțiuni contra sănătății publice",
+      "Trafic de droguri",
+      "Infracțiuni informatice (acces ilegal, sabotaj informatic)"
     ]
   },
 
-  // Titlul VIII - Infracțiuni care aduc atingere unor relații privind conviețuirea socială
   {
-    id: "titlul_viii_convietuire_sociala",
-    name: "Titlul VIII - Infracțiuni contra convietuirii sociale",
-    description: "Tulburarea ordinii publice, infracțiuni contra familiei și libertății religioase",
+    id: "convietuire_sociala",
+    name: "Infracțiuni contra convietuirii sociale",
+    description: "Tulburarea ordinii publice, contra familiei",
     articles: ["Art. 367-384 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni contra ordinii și liniștii publice",
-      "Capitolul II - Infracțiuni contra familiei",
-      "Capitolul III - Infracțiuni contra libertății religioase și respectului datorat persoanelor decedate"
+      "Tulburarea ordinii și liniștii publice",
+      "Pornografie infantilă",
+      "Proxenetism",
+      "Infracțiuni contra familiei (bigamie, abandon de familie)",
+      "Nerespectarea măsurilor de protecție",
+      "Infracțiuni contra libertății religioase",
+      "Profanarea de morminte"
     ]
   },
 
-  // Titlul IX - Infracțiuni electorale
   {
-    id: "titlul_ix_electorale",
-    name: "Titlul IX - Infracțiuni electorale",
-    description: "Infracțiuni legate de procesul electoral și votul democratic",
+    id: "electorale",
+    name: "Infracțiuni electorale",
+    description: "Infracțiuni legate de procesul electoral",
     articles: ["Art. 385-393 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
       "Coruperea alegătorilor",
       "Fraudarea alegerilor",
       "Împiedicarea exercitării drepturilor electorale",
-      "Alte infracțiuni electorale"
+      "Votul ilegal",
+      "Înscrierea ilegală în listele electorale"
     ]
   },
 
-  // Titlul X - Infracțiuni contra securității naționale
   {
-    id: "titlul_x_securitate_nationala",
-    name: "Titlul X - Infracțiuni contra securității naționale",
-    description: "Trădare, spionaj, sabotaj și alte infracțiuni contra statului",
+    id: "securitate_nationala",
+    name: "Infracțiuni contra securității naționale",
+    description: "Trădare, spionaj, sabotaj",
     articles: ["Art. 394-412 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
       "Trădarea",
       "Spionajul",
+      "Divulgarea secretului de stat",
       "Sabotajul",
       "Diversiunea",
-      "Asocierea în vederea săvârșirii de infracțiuni contra securității naționale"
+      "Complotul",
+      "Asocierea împotriva ordinii constituționale"
     ]
   },
 
-  // Titlul XI - Infracțiuni contra capacității de luptă a forțelor armate
   {
-    id: "titlul_xi_forte_armate",
-    name: "Titlul XI - Infracțiuni contra capacității de luptă a forțelor armate",
-    description: "Infracțiuni militare specifice",
+    id: "forte_armate",
+    name: "Infracțiuni militare",
+    description: "Infracțiuni contra capacității de luptă",
     articles: ["Art. 413-437 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni săvârșite de militari",
-      "Capitolul II - Infracțiuni săvârșite de militari sau de civili"
+      "Dezertarea",
+      "Trecerea frauduloasă a frontierei de către militari",
+      "Refuzul de a executa o dispoziție",
+      "Revolta",
+      "Distrugerea sau degradarea bunurilor militare",
+      "Abandonarea postului",
+      "Infracțiuni în timp de război"
     ]
   },
 
-  // Titlul XII - Infracțiuni de genocid, contra umanității și de război
   {
-    id: "titlul_xii_genocid_umanitate_razboi",
-    name: "Titlul XII - Infracțiuni de genocid, contra umanității și de război",
-    description: "Crime împotriva umanității și dreptului internațional umanitar",
+    id: "genocid_umanitate_razboi",
+    name: "Genocid, crime contra umanității și de război",
+    description: "Crime împotriva umanității și dreptului internațional",
     articles: ["Art. 438-445 C.pen."],
-    part: "SPECIALĂ",
     subcategories: [
-      "Capitolul I - Infracțiuni de genocid și contra umanității",
-      "Capitolul II - Infracțiuni de război"
-    ]
-  },
-
-  // Titlul XIII - Dispoziții finale
-  {
-    id: "titlul_xiii_dispozitii_finale",
-    name: "Titlul XIII - Dispoziții finale",
-    description: "Dispoziții finale și tranzitorii",
-    articles: ["Art. 446 C.pen."],
-    part: "SPECIALĂ",
-    subcategories: [
-      "Dispoziții finale"
+      "Genocid",
+      "Crime contra umanității",
+      "Crime de război",
+      "Violarea legilor și obiceiurilor războiului",
+      "Utilizarea armelor interzise"
     ]
   }
 ];
 
-// Helper function to get all subcategories as a flat array
+// Helper function to get all subcategories formatted like civil law
 export function getAllPenalSubcategories(): string[] {
-  return PENAL_LAW_CATEGORIES.flatMap(category => category.subcategories);
+  const allSubcategories: string[] = [];
+
+  PENAL_LAW_CATEGORIES.forEach(category => {
+    category.subcategories.forEach(subcat => {
+      allSubcategories.push(`${category.name} (${subcat})`);
+    });
+  });
+
+  allSubcategories.push('Altele');
+
+  return allSubcategories;
 }
 
 // Helper function to get subcategories by category ID
@@ -387,13 +382,7 @@ export function getPenalCategoryById(categoryId: string): PenalLawCategory | und
   return PENAL_LAW_CATEGORIES.find(c => c.id === categoryId);
 }
 
-// Helper function to get categories by part (GENERALĂ or SPECIALĂ)
-export function getPenalCategoriesByPart(part: 'GENERALĂ' | 'SPECIALĂ'): PenalLawCategory[] {
-  return PENAL_LAW_CATEGORIES.filter(c => c.part === part);
+// Helper function to format subcategory for database
+export function formatPenalSubcategoryForDB(categoryName: string, subcategory: string): string {
+  return `${categoryName} (${subcategory})`;
 }
-
-// Get Partea GENERALĂ categories
-export const PENAL_PARTEA_GENERALA = getPenalCategoriesByPart('GENERALĂ');
-
-// Get Partea SPECIALĂ categories
-export const PENAL_PARTEA_SPECIALA = getPenalCategoriesByPart('SPECIALĂ');
