@@ -91,46 +91,62 @@ export async function saveCaseToSupabase(caseData: CaseToSave): Promise<string> 
 
     // Step 3: Insert analysis steps
     if (caseData.analysis_steps.length > 0) {
-      const stepsData = caseData.analysis_steps.map(step => ({
-        case_id: caseId,
-        step_number: step.step_number,
-        step_description: step.description
-      }));
+      // Filter out invalid steps and ensure proper numbering
+      const validSteps = caseData.analysis_steps
+        .filter(step => step.description && step.description.trim().length > 0)
+        .map((step, index) => ({
+          case_id: caseId,
+          step_number: step.step_number || (index + 1), // Fallback to index-based numbering
+          step_description: step.description.trim()
+        }));
 
-      const { error: stepsError } = await supabase
-        .from('case_analysis_steps')
-        .insert(stepsData);
+      if (validSteps.length > 0) {
+        const { error: stepsError } = await supabase
+          .from('case_analysis_steps')
+          .insert(validSteps);
 
-      if (stepsError) {
-        console.error('❌ Error inserting analysis steps:', stepsError);
-        // Try to rollback
-        await supabase.from('cases').delete().eq('id', caseId);
-        throw new Error(`Eroare la salvarea pașilor de analiză: ${stepsError.message}`);
+        if (stepsError) {
+          console.error('❌ Error inserting analysis steps:', stepsError);
+          console.error('Steps data:', validSteps);
+          // Try to rollback
+          await supabase.from('cases').delete().eq('id', caseId);
+          throw new Error(`Eroare la salvarea pașilor de analiză: ${stepsError.message}`);
+        }
+
+        console.log(`✅ Inserted ${validSteps.length} analysis steps`);
+      } else {
+        console.log('⚠️ No valid analysis steps to insert');
       }
-
-      console.log(`✅ Inserted ${caseData.analysis_steps.length} analysis steps`);
     }
 
     // Step 4: Insert hints
     if (caseData.hints.length > 0) {
-      const hintsData = caseData.hints.map(hint => ({
-        case_id: caseId,
-        hint_number: hint.hint_number,
-        hint_text: hint.text
-      }));
+      // Filter out invalid hints and ensure proper numbering
+      const validHints = caseData.hints
+        .filter(hint => hint.text && hint.text.trim().length > 0)
+        .map((hint, index) => ({
+          case_id: caseId,
+          hint_number: hint.hint_number || (index + 1), // Fallback to index-based numbering
+          hint_text: hint.text.trim()
+        }));
 
-      const { error: hintsError } = await supabase
-        .from('case_hints')
-        .insert(hintsData);
+      if (validHints.length > 0) {
+        const { error: hintsError } = await supabase
+          .from('case_hints')
+          .insert(validHints);
 
-      if (hintsError) {
-        console.error('❌ Error inserting hints:', hintsError);
-        // Try to rollback
-        await supabase.from('cases').delete().eq('id', caseId);
-        throw new Error(`Eroare la salvarea indiciilor: ${hintsError.message}`);
+        if (hintsError) {
+          console.error('❌ Error inserting hints:', hintsError);
+          console.error('Hints data:', validHints);
+          // Try to rollback
+          await supabase.from('cases').delete().eq('id', caseId);
+          throw new Error(`Eroare la salvarea indiciilor: ${hintsError.message}`);
+        }
+
+        console.log(`✅ Inserted ${validHints.length} hints`);
+      } else {
+        console.log('⚠️ No valid hints to insert');
       }
-
-      console.log(`✅ Inserted ${caseData.hints.length} hints`);
     }
 
     console.log('✅ Case saved successfully to Supabase!');

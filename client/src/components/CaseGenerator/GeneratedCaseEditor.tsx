@@ -161,11 +161,16 @@ export const GeneratedCaseEditor = ({
     if (!editedSubcategory && selectedDomain === 'civil') {
       errors.push('Subcategoria este obligatorie pentru cazuri civile');
     }
-    if (editedCase.analysis_steps.length === 0) {
-      errors.push('Cel puțin un pas de analiză este obligatoriu');
+    // Check for valid analysis steps (not empty)
+    const validSteps = editedCase.analysis_steps.filter(step => step.description && step.description.trim().length > 0);
+    if (validSteps.length === 0) {
+      errors.push('Cel puțin un pas de analiză cu conținut este obligatoriu');
     }
-    if (editedCase.hints.length === 0) {
-      errors.push('Cel puțin un indiciu este obligatoriu');
+
+    // Check for valid hints (not empty)
+    const validHints = editedCase.hints.filter(hint => hint.text && hint.text.trim().length > 0);
+    if (validHints.length === 0) {
+      errors.push('Cel puțin un indiciu cu conținut este obligatoriu');
     }
 
     if (errors.length > 0) {
