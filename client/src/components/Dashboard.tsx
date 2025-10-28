@@ -44,7 +44,8 @@ import {
   FileText,
   HelpCircle,
   Eye,
-  Lightbulb
+  Lightbulb,
+  Sparkles
 } from 'lucide-react';
 
 interface CivilCategory {
@@ -620,6 +621,15 @@ Concluzia:
 
           {/* Right section: User actions */}
           <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+            <Button
+              onClick={() => navigate('/case-generator')}
+              className="gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+              size="sm"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Generator de Cazuri</span>
+              <span className="sm:hidden">Generator</span>
+            </Button>
             <Button
               onClick={() => navigate('/reporting')}
               variant="ghost"
