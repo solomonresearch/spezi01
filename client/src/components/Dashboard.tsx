@@ -654,8 +654,8 @@ Concluzia:
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <span className="text-sm hidden sm:inline">{user?.email}</span>
-                  <span className="text-sm sm:hidden">{user?.email?.split('@')[0]}</span>
+                  <span className="text-sm hidden sm:inline">{profile?.username}</span>
+                  <span className="text-sm sm:hidden">{profile?.username}</span>
                   <span className="text-xs">▼</span>
                 </Button>
               </DropdownMenuTrigger>
