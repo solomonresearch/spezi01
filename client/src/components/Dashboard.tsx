@@ -1402,12 +1402,7 @@ Concluzia:
 
       {/* Footer */}
       <footer className="border-t border-border bg-muted/30 py-3 px-4">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span>❤️</span>
-            <span>Made with love for students</span>
-            <span>❤️</span>
-          </div>
+        <div className="container mx-auto flex items-center justify-center">
           <Button
             variant="outline"
             size="sm"
