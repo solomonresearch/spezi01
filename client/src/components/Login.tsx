@@ -53,7 +53,7 @@ export const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yinmn-blue-500 to-air-superiority-blue-500 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-white p-4">
       <div className="w-full max-w-2xl space-y-6">
         {/* Logo and Welcome Section */}
         <div className="text-center space-y-4">
@@ -61,15 +61,15 @@ export const Login = () => {
             <Logo size="xl" />
           </div>
           <div className="space-y-2">
-            <Badge variant="outline" className="bg-white/10 text-white border-white/30">
+            <Badge variant="outline" className="border-primary/30 text-primary">
               versiunea v0.1
             </Badge>
           </div>
-          <div className="max-w-lg mx-auto space-y-3 text-white/90">
+          <div className="max-w-lg mx-auto space-y-3 text-foreground">
             <p className="text-lg font-medium">
               Platformă AI pentru studenții la drept
             </p>
-            <p className="text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               Te ajutăm să devii un jurist mai bun, să treci examenele cu succes și să acumulezi
               cunoștințele necesare pentru a-i ajuta pe alții. Învățăm împreună, creștem împreună.
             </p>
@@ -138,9 +138,8 @@ export const Login = () => {
           <FeedbackDialog
             variant="outline"
             size="sm"
-            className="bg-white/10 hover:bg-white/20 text-white border-white/30"
           />
-          <p className="text-xs text-white/70 italic">
+          <p className="text-xs text-muted-foreground italic">
             Orice feedback este binevenit și ne ajută să îmbunătățim platforma! 🙏
           </p>
         </div>
