@@ -338,27 +338,22 @@ body {
 }
 
 .header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo-btn {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 16px;
   transition: transform 0.2s, opacity 0.2s;
 }
 
-.logo-btn:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+.header-left:hover {
+  transform: scale(1.02);
+  opacity: 0.95;
 }
 
-.logo-btn:active {
+.header-left:active {
   transform: scale(0.98);
 }
 
@@ -1013,7 +1008,7 @@ body {
     gap: 12px;
   }
 
-  .logo-btn svg {
+  .header-left svg {
     width: 32px;
     height: 32px;
   }
@@ -1090,7 +1085,7 @@ body {
     gap: 8px;
   }
 
-  .logo-btn svg {
+  .header-left svg {
     width: 28px;
     height: 28px;
   }
