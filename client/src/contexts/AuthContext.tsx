@@ -120,18 +120,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return { error: new Error('User creation failed') };
       }
 
-      // Then, create the user profile
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert({
-          id: data.user.id,
-          email: email,
-          name: profile.name,
-          username: profile.username,
-          university_code: profile.university_code,
-          university_category: profile.university_category,
-          university_name: profile.university_name,
-        });
+      // Then, create the user profile using secure function that bypasses RLS
+      const { error: profileError } = await supabase.rpc('create_user_profile', {
+        p_id: data.user.id,
+        p_email: email,
+        p_name: profile.name,
+        p_username: profile.username,
+        p_university_code: profile.university_code,
+        p_university_category: profile.university_category,
+        p_university_name: profile.university_name,
+      });
 
       if (profileError) {
         // If profile creation fails, we should ideally delete the auth user
