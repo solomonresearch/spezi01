@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Sparkles, Shield, Users, BarChart3, FolderKanban, Settings } from 'lucide-react';
+import { ArrowLeft, Sparkles, Shield, Users, BarChart3, FolderKanban, Settings, MessageSquare } from 'lucide-react';
+import { feedbackService } from '../services/feedbackService';
+import type { Feedback } from '../services/feedbackService';
 
 interface UserProfile {
   id: string;
@@ -22,8 +24,11 @@ export const AdminPanel = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackLoading, setFeedbackLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect if not admin
@@ -34,6 +39,7 @@ export const AdminPanel = () => {
 
     if (profile?.is_admin) {
       fetchUsers();
+      fetchFeedback();
     }
   }, [profile, navigate]);
 
@@ -54,6 +60,23 @@ export const AdminPanel = () => {
       setError('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFeedback = async () => {
+    try {
+      setFeedbackLoading(true);
+      const { data, error: fetchError } = await feedbackService.getAllFeedback();
+
+      if (fetchError) throw fetchError;
+
+      setFeedback(data || []);
+      setFeedbackError(null);
+    } catch (err) {
+      console.error('Error fetching feedback:', err);
+      setFeedbackError('Failed to load feedback');
+    } finally {
+      setFeedbackLoading(false);
     }
   };
 
@@ -146,6 +169,55 @@ export const AdminPanel = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {new Date(user.created_at).toLocaleDateString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Feedback Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                User Feedback
+              </span>
+              <Badge variant="secondary">{feedback.length} submissions</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {feedbackLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading feedback...</div>
+            ) : feedbackError ? (
+              <div className="text-center py-8 text-destructive">{feedbackError}</div>
+            ) : feedback.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">No feedback submitted yet</div>
+            ) : (
+              <div className="rounded-md border overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead className="max-w-md">Feedback</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {feedback.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground whitespace-nowrap">
+                          {new Date(item.created_at).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {item.email || <span className="text-muted-foreground italic">Anonymous</span>}
+                        </TableCell>
+                        <TableCell className="max-w-md">
+                          <p className="line-clamp-3">{item.body}</p>
                         </TableCell>
                       </TableRow>
                     ))}

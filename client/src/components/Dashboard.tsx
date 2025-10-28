@@ -5,6 +5,7 @@ import { useCasesBySubcategory, useCase } from '../hooks/useCases';
 import { useChat } from '../hooks/useChat';
 import { useAssessment } from '../hooks/useAssessment';
 import { Logo } from './Logo';
+import { FeedbackDialog } from './FeedbackDialog';
 import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
 import { CONSTITUTIONAL_LAW_CATEGORIES } from '../constants/constitutionalLawCategories';
 import type { Case } from '../types/case';
@@ -43,8 +44,7 @@ import {
   FileText,
   HelpCircle,
   Eye,
-  Lightbulb,
-  Mail
+  Lightbulb
 } from 'lucide-react';
 
 interface CivilCategory {
@@ -1403,15 +1403,11 @@ Concluzia:
       {/* Footer */}
       <footer className="border-t border-border bg-muted/30 py-3 px-4">
         <div className="container mx-auto flex items-center justify-center">
-          <Button
+          <FeedbackDialog
             variant="outline"
             size="sm"
-            onClick={() => window.location.href = 'mailto:ro.victorsolomon@gmail.com?subject=Feedback Spezi01'}
-            className="gap-2 text-xs"
-          >
-            <Mail className="h-3 w-3" />
-            Trimite Feedback
-          </Button>
+            className="text-xs"
+          />
         </div>
       </footer>
     </div>

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Logo } from './Logo';
-import { Mail } from 'lucide-react';
+import { FeedbackDialog } from './FeedbackDialog';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -74,15 +74,11 @@ export const Login = () => {
               cunoștințele necesare pentru a-i ajuta pe alții. Învățăm împreună, creștem împreună.
             </p>
             <div className="pt-2">
-              <Button
+              <FeedbackDialog
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = 'mailto:ro.victorsolomon@gmail.com?subject=Feedback Spezi01'}
-                className="gap-2 bg-white/10 hover:bg-white/20 text-white border-white/30"
-              >
-                <Mail className="h-4 w-4" />
-                Trimite Feedback
-              </Button>
+                className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+              />
             </div>
             <p className="text-xs text-white/70 italic">
               Orice feedback este binevenit și ne ajută să îmbunătățim platforma! 🙏
