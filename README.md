@@ -263,6 +263,245 @@ See `Developer/SIMPLE-MIGRATION-WORKFLOW.md` for detailed workflow.
 - Foreign key relationships for data integrity
 - Indexes on frequently queried fields
 
+## API Documentation
+
+The platform integrates with Anthropic's Claude AI (Sonnet 4.5) for intelligent legal tutoring and assessment.
+
+### Environment Variables
+
+All API services require the following environment variable:
+
+```bash
+VITE_CLAUDE_API_KEY=your_anthropic_api_key_here
+```
+
+### 1. AI Chat Service (`claudeService`)
+
+**Purpose**: Provides Socratic method tutoring for legal case analysis.
+
+**Model**: `claude-sonnet-4-20250514`
+
+**Features**:
+- Context-aware (includes current case details)
+- Interaction limiting (3 rounds per case)
+- Socratic questioning (guides without giving answers)
+- Romanian language support
+
+**API Call**:
+```typescript
+import { claudeService } from './services/claudeService';
+
+const response = await claudeService.sendMessage(
+  messages,           // ChatMessage[] - conversation history
+  newMessage,         // string - user's new message
+  context?            // ChatContext - optional case details
+);
+```
+
+**Context Object**:
+```typescript
+interface ChatContext {
+  caseTitle?: string;
+  legalProblem?: string;
+  caseDescription?: string;
+  question?: string;
+  articles?: string[];  // Array of article references
+}
+```
+
+**Response**: Returns string with AI's Socratic guidance.
+
+**Configuration**:
+- `max_tokens`: 1024
+- `temperature`: 0.1 (consistent, focused responses)
+- Automatically stops after 3 user messages
+
+---
+
+### 2. Assessment Service (`assessmentService`)
+
+**Purpose**: AI-powered evaluation of student case solutions with plagiarism detection.
+
+**Model**: `claude-sonnet-4-20250514`
+
+#### 2.1 AI Detection
+
+Detects AI-generated content in student submissions.
+
+```typescript
+import { assessmentService } from './services/assessmentService';
+
+const result = await assessmentService.detectAI(solutionText);
+// Returns: { probability: number, passed: boolean, justification: string }
+```
+
+**Detection Indicators**:
+- Perfect structure and repetition
+- Generic transition phrases
+- Lack of human errors
+- Uniform tone without natural variation
+
+**Threshold**: Solutions with >30% AI probability are flagged.
+
+**Configuration**:
+- `max_tokens`: 1024
+- `temperature`: 0.3
+
+#### 2.2 Solution Assessment
+
+Evaluates legal case solutions with detailed grading rubric.
+
+```typescript
+const evaluation = await assessmentService.assessSolution(
+  solutionText,      // string - student's solution
+  difficultyLevel    // 1 | 3 | 5 - difficulty hammer level
+);
+```
+
+**Grading Criteria** (100 points total):
+
+**I. Intellectual Operations (40 points)**:
+- Reading comprehension (5p)
+- Identifying essential elements (8p)
+- Chronological ordering (5p)
+- Fact summary (7p)
+- Legal qualification (10p)
+- Problem determination (5p)
+
+**II. Solution Writing (60 points)**:
+- Introduction (10p): Facts, qualification, problems
+- Syllogism Analysis (50p):
+  - Major premise - Legal rules (20p)
+  - Minor premise - Factual situation (15p)
+  - Conclusion - Answer (15p)
+
+**Difficulty Levels**:
+- Level 1 🔨: Basic understanding
+- Level 3 🔨🔨🔨: Complete and clear
+- Level 5 🔨🔨🔨🔨🔨: Impeccable, professional
+
+**Configuration**:
+- `max_tokens`: 4096
+- `temperature`: 0.2
+
+---
+
+### 3. Case Generator Service (`caseGeneratorService`)
+
+**Purpose**: AI-powered generation of legal case studies tailored to curriculum.
+
+**Model**: `claude-sonnet-4-20250514`
+
+```typescript
+import { caseGeneratorService } from './services/caseGeneratorService';
+
+const generatedCase = await caseGeneratorService.generateCase({
+  domain: 'civil',           // 'civil' | 'penal' | 'constitutional'
+  categories: [...],         // Selected categories
+  articles: [...],           // Specific articles to include
+  difficulty: 'mediu',       // 'usor' | 'mediu' | 'dificil'
+  weekNumber: 3,             // Week in curriculum
+  context: 'Custom scenario', // Optional context
+  subcategory: 'Contracts'   // Optional subcategory
+});
+```
+
+**Generated Case Structure**:
+```typescript
+{
+  title: string;              // 10-15 words
+  legal_problem: string;      // 2-3 sentences
+  case_description: string;   // 250-400 words
+  question: string;           // Specific legal question
+  analysis_steps: [{          // 3-6 steps
+    step_number: number;
+    description: string;
+  }];
+  hints: [{                   // 2-4 hints
+    hint_number: number;
+    text: string;
+  }];
+}
+```
+
+**Features**:
+- Realistic Romanian names and locations
+- Article-specific scenarios
+- Difficulty-appropriate complexity
+- Progressive hints system
+
+**Configuration**:
+- `max_tokens`: 4096
+- `temperature`: 0.7 (creative case generation)
+
+---
+
+### API Response Formats
+
+**Success Response**:
+```typescript
+{
+  content: string | object,
+  model: "claude-sonnet-4-20250514",
+  usage: {
+    input_tokens: number,
+    output_tokens: number
+  }
+}
+```
+
+**Error Handling**:
+All services throw errors that should be caught:
+```typescript
+try {
+  const result = await claudeService.sendMessage(...);
+} catch (error) {
+  console.error('API Error:', error);
+  // Handle error appropriately
+}
+```
+
+---
+
+### Rate Limits & Best Practices
+
+- **Browser Usage**: All services use `dangerouslyAllowBrowser: true`
+- **Security**: Never expose API keys in client-side code (use server-side proxy for production)
+- **Caching**: Consider caching common queries
+- **Error Recovery**: Implement retry logic with exponential backoff
+- **Token Management**: Monitor token usage to optimize costs
+
+---
+
+### Integration Example
+
+Complete workflow for case solution assessment:
+
+```typescript
+// 1. User submits solution
+const solutionText = userInput;
+
+// 2. Detect AI-generated content
+const aiCheck = await assessmentService.detectAI(solutionText);
+
+if (!aiCheck.passed) {
+  alert(`AI content detected (${aiCheck.probability}%): ${aiCheck.justification}`);
+  return;
+}
+
+// 3. Assess the solution
+const difficultyLevel = 3; // Medium difficulty
+const assessment = await assessmentService.assessSolution(
+  solutionText,
+  difficultyLevel
+);
+
+// 4. Display detailed feedback
+console.log(assessment); // Formatted evaluation with scores
+```
+
+---
+
 ## Security Features
 
 - ✅ **Row Level Security** - Database-level access control
