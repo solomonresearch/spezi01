@@ -578,8 +578,9 @@ Concluzia:
     <div className="flex flex-col h-screen bg-background">
       {/* Header with Tailwind */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
-        <div className="container flex h-14 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
+        <div className="container flex h-14 items-center px-4 gap-4">
+          {/* Left section: Mobile menu + Logo */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* Mobile menu button */}
             <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
               <SheetTrigger asChild>
@@ -605,16 +606,25 @@ Concluzia:
               className="flex items-center gap-2 hover:opacity-80 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               <Logo />
-              <Badge variant="secondary" className="text-xs">Beta v0.1</Badge>
+              <Badge variant="secondary" className="text-xs hidden sm:inline-flex">Beta v0.1</Badge>
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Center section: Experimental notice */}
+          <div className="flex-1 flex items-center justify-center">
+            <Badge variant="outline" className="hidden md:inline-flex text-xs border-amber-500/50 text-amber-600 dark:text-amber-400">
+              Versiune experimentală - Poate conține erori
+            </Badge>
+          </div>
+
+          {/* Right section: User actions */}
+          <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
             <Button
               onClick={() => navigate('/reporting')}
               variant="ghost"
               size="sm"
               title="My Progress"
+              className="hidden sm:inline-flex"
             >
               Progress
             </Button>
@@ -624,6 +634,7 @@ Concluzia:
                 variant="ghost"
                 size="sm"
                 title="Admin Panel"
+                className="hidden sm:inline-flex"
               >
                 Admin
               </Button>
@@ -632,7 +643,8 @@ Concluzia:
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <span className="text-sm">{user?.email}</span>
+                  <span className="text-sm hidden sm:inline">{user?.email}</span>
+                  <span className="text-sm sm:hidden">{user?.email?.split('@')[0]}</span>
                   <span className="text-xs">▼</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -1386,6 +1398,20 @@ Concluzia:
           </Card>
         </aside>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-border bg-muted/30 py-4 px-4">
+        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <span>© {new Date().getFullYear()} Spezi01</span>
+          </div>
+          <div className="flex items-center gap-1 text-center">
+            <span>❤️</span>
+            <span>Made with love for students</span>
+            <span>❤️</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
