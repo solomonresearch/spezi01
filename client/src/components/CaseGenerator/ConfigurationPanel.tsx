@@ -17,8 +17,8 @@ interface ConfigurationPanelProps {
 }
 
 export const ConfigurationPanel = ({
-  selectedDomain,
-  subcategory,
+  selectedDomain: _selectedDomain,
+  subcategory: _subcategory,
   difficultyLevel,
   weekNumber,
   onChange,
