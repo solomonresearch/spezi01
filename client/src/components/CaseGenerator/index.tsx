@@ -301,6 +301,8 @@ export const CaseGenerator = () => {
             caseData={state.generatedCase}
             caseCode={state.caseCode}
             selectedArticles={state.selectedArticles}
+            selectedCategories={state.selectedCategories}
+            selectedDomain={state.selectedDomain!}
             difficultyLevel={state.difficultyLevel}
             weekNumber={state.weekNumber}
             subcategory={state.subcategory}

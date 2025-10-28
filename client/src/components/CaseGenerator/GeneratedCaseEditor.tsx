@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { CheckCircle, Sparkles, SquarePen, AlertCircle, RefreshCw, Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
-import type { GeneratedCase, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
+import type { GeneratedCase, ArticleReference, DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
 import type { CaseToSave } from '../../types/caseGenerator';
 import { saveCaseToSupabase } from '../../services/saveCaseToSupabase';
+import { CATEGORIES, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,11 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface GeneratedCaseEditorProps {
   caseData: GeneratedCase;
   caseCode: string;
   selectedArticles: ArticleReference[];
+  selectedCategories: string[];
+  selectedDomain: LegalDomain;
   difficultyLevel: DifficultyLevel;
   weekNumber: number;
   subcategory: string;
@@ -26,6 +30,8 @@ export const GeneratedCaseEditor = ({
   caseData,
   caseCode,
   selectedArticles,
+  selectedCategories,
+  selectedDomain,
   difficultyLevel,
   weekNumber,
   subcategory,
@@ -34,9 +40,16 @@ export const GeneratedCaseEditor = ({
 }: GeneratedCaseEditorProps) => {
   const [editedCase, setEditedCase] = useState<GeneratedCase>(caseData);
   const [editedCaseCode, setEditedCaseCode] = useState(caseCode);
+  const [editedCategory, setEditedCategory] = useState<string>(selectedCategories[0] || '');
+  const [editedSubcategory, setEditedSubcategory] = useState<string>(subcategory || '');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Get available categories for the selected domain
+  const availableCategories = CATEGORIES.filter(c => c.domain === selectedDomain);
+  // For now, only civil domain has subcategories
+  const availableSubcategories = selectedDomain === 'civil' ? CIVIL_SUBCATEGORIES : [];
 
   // Update handlers
   const updateField = (field: keyof GeneratedCase, value: any) => {
@@ -127,9 +140,36 @@ export const GeneratedCaseEditor = ({
 
   // Save to Supabase
   const handleSave = async () => {
-    // Validate case code
+    // Validate required fields
+    const errors: string[] = [];
+
     if (!editedCaseCode.trim()) {
-      setSaveError('Codul cazului este obligatoriu');
+      errors.push('Codul cazului este obligatoriu');
+    }
+    if (!editedCase.title.trim()) {
+      errors.push('Titlul este obligatoriu');
+    }
+    if (!editedCase.legal_problem.trim()) {
+      errors.push('Problema juridică este obligatorie');
+    }
+    if (!editedCase.case_description.trim()) {
+      errors.push('Descrierea cazului este obligatorie');
+    }
+    if (!editedCase.question.trim()) {
+      errors.push('Întrebarea este obligatorie');
+    }
+    if (!editedSubcategory && selectedDomain === 'civil') {
+      errors.push('Subcategoria este obligatorie pentru cazuri civile');
+    }
+    if (editedCase.analysis_steps.length === 0) {
+      errors.push('Cel puțin un pas de analiză este obligatoriu');
+    }
+    if (editedCase.hints.length === 0) {
+      errors.push('Cel puțin un indiciu este obligatoriu');
+    }
+
+    if (errors.length > 0) {
+      setSaveError(errors.join('. '));
       return;
     }
 
@@ -138,13 +178,13 @@ export const GeneratedCaseEditor = ({
 
     const dataToSave: CaseToSave = {
       case_code: editedCaseCode.trim().toUpperCase(),
-      title: editedCase.title,
+      title: editedCase.title.trim(),
       level: difficultyLevel,
       week_number: weekNumber,
-      legal_problem: editedCase.legal_problem,
-      case_description: editedCase.case_description,
-      question: editedCase.question,
-      subcategory: subcategory || null,
+      legal_problem: editedCase.legal_problem.trim(),
+      case_description: editedCase.case_description.trim(),
+      question: editedCase.question.trim(),
+      subcategory: editedSubcategory || null,
       verified: false,
       articles: selectedArticles,
       analysis_steps: editedCase.analysis_steps,
@@ -282,6 +322,58 @@ export const GeneratedCaseEditor = ({
             onChange={(e) => updateField('question', e.target.value)}
             placeholder="Întrebarea juridică pentru student..."
           />
+        </div>
+
+        {/* Category and Subcategory */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="space-y-2">
+            <Label htmlFor="category">
+              Categoria
+              <Badge variant="outline" className="ml-2 text-xs">
+                {editedCategory ? 'AI selectat' : 'Neselectat'}
+              </Badge>
+            </Label>
+            <Select value={editedCategory} onValueChange={setEditedCategory}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Alege categoria..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Categoria ajută la organizarea cazurilor (informativ, nu se salvează în baza de date)
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="subcategory">
+              Subcategoria
+              <Badge variant="outline" className="ml-2 text-xs">
+                {editedSubcategory ? 'AI selectat' : 'Neselectat'}
+              </Badge>
+              <span className="text-destructive ml-1">*</span>
+            </Label>
+            <Select value={editedSubcategory} onValueChange={setEditedSubcategory}>
+              <SelectTrigger id="subcategory">
+                <SelectValue placeholder="Alege subcategoria..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableSubcategories.map((subcat) => (
+                  <SelectItem key={subcat} value={subcat}>
+                    {subcat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {selectedDomain === 'civil' && 'Subcategoria este obligatorie pentru cazuri civile'}
+            </p>
+          </div>
         </div>
 
         {/* Analysis Steps */}
