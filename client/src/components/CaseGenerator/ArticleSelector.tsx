@@ -1,19 +1,25 @@
 import { useState } from 'react';
-import { AlertCircle, Plus, X } from 'lucide-react';
+import { AlertCircle, Plus, X, Check } from 'lucide-react';
 import type { LegalDomain, ArticleReference } from '../../types/caseGenerator';
 import { formatArticleReference } from '../../constants/caseGeneratorData';
+import { getAllCivilSubcategories } from '../../constants/civilLawCategories';
+import { getAllPenalSubcategories } from '../../constants/penalLawCategories';
+import { getAllConstitutionalSubcategories } from '../../constants/constitutionalLawCategories';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ArticleSelectorProps {
   selectedDomain: LegalDomain;
   selectedArticles: ArticleReference[];
+  subcategory: string;
   onChange: (articles: ArticleReference[]) => void;
+  onSubcategoryChange: (subcategory: string) => void;
 }
 
-export const ArticleSelector = ({ selectedDomain, selectedArticles, onChange }: ArticleSelectorProps) => {
+export const ArticleSelector = ({ selectedDomain, selectedArticles, subcategory, onChange, onSubcategoryChange }: ArticleSelectorProps) => {
   const [inputValue, setInputValue] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -138,6 +144,103 @@ export const ArticleSelector = ({ selectedDomain, selectedArticles, onChange }: 
           <p className="text-sm">Introdu primul articol pentru a continua</p>
         </div>
       )}
+
+      {/* Subcategory Selection */}
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold">Subcategorie (opțional)</h3>
+        {selectedDomain === 'civil' ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Selectează subcategoria pentru drept civil (conform structurii cursului)
+            </p>
+            <Select value={subcategory} onValueChange={onSubcategoryChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selectează subcategoria..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                {getAllCivilSubcategories().map((subcatOption) => (
+                  <SelectItem key={subcatOption} value={subcatOption}>
+                    {subcatOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {subcategory && (
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcategory}
+              </p>
+            )}
+          </>
+        ) : selectedDomain === 'penal' ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Selectează subcategoria pentru drept penal (conform Codului Penal)
+            </p>
+            <Select value={subcategory} onValueChange={onSubcategoryChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selectează subcategoria..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                {getAllPenalSubcategories().map((subcatOption) => (
+                  <SelectItem key={subcatOption} value={subcatOption}>
+                    {subcatOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {subcategory && (
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcategory}
+              </p>
+            )}
+          </>
+        ) : selectedDomain === 'constitutional' ? (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Selectează subcategoria pentru drept constituțional (conform structurii cursului)
+            </p>
+            <Select value={subcategory} onValueChange={onSubcategoryChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selectează subcategoria..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                {getAllConstitutionalSubcategories().map((subcatOption) => (
+                  <SelectItem key={subcatOption} value={subcatOption}>
+                    {subcatOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {subcategory && (
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcategory}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">
+              Adaugă o subcategorie pentru organizare mai detaliată (opțional)
+            </p>
+            <Input
+              type="text"
+              placeholder="Ex: Separația puterilor, etc."
+              value={subcategory}
+              onChange={(e) => onSubcategoryChange(e.target.value)}
+              maxLength={100}
+            />
+            {subcategory && (
+              <p className="text-sm text-green-600 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Subcategorie: {subcategory}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

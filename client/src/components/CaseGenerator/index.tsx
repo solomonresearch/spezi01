@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, Bot } from 'lucide-react';
 import type { CaseGeneratorState, GeneratedCase, LegalDomain, ArticleReference, DifficultyLevel } from '../../types/caseGenerator';
-import { generateCaseCode, CATEGORIES, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
+import { generateCaseCode, CATEGORIES, CIVIL_SUBCATEGORIES, PENAL_SUBCATEGORIES, CONSTITUTIONAL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
 import { caseGeneratorService } from '../../services/caseGeneratorService';
 import { DomainSelector } from './DomainSelector';
 import { CategoryGrid } from './CategoryGrid';
@@ -56,10 +56,13 @@ export const CaseGenerator = () => {
 
   const handleConfigurationChange = useCallback((
     difficultyLevel: DifficultyLevel,
-    weekNumber: number,
-    subcategory: string
+    weekNumber: number
   ) => {
-    setState(prev => ({ ...prev, difficultyLevel, weekNumber, subcategory }));
+    setState(prev => ({ ...prev, difficultyLevel, weekNumber }));
+  }, []);
+
+  const handleSubcategoryChange = useCallback((subcategory: string) => {
+    setState(prev => ({ ...prev, subcategory }));
   }, []);
 
   const handleGeneratedCaseChange = useCallback((updatedCase: GeneratedCase) => {
@@ -101,14 +104,28 @@ export const CaseGenerator = () => {
       let finalCategories = state.selectedCategories;
       let finalSubcategory = state.subcategory;
 
-      if ((finalCategories.length === 0 || !finalSubcategory) && state.selectedDomain === 'civil') {
+      if ((finalCategories.length === 0 || !finalSubcategory) && state.selectedDomain) {
         console.log('📊 Categories or subcategories missing, using AI to classify...');
+
+        // Get the appropriate subcategories list based on domain
+        let domainSubcategories: string[] = [];
+        switch (state.selectedDomain) {
+          case 'civil':
+            domainSubcategories = CIVIL_SUBCATEGORIES;
+            break;
+          case 'penal':
+            domainSubcategories = PENAL_SUBCATEGORIES;
+            break;
+          case 'constitutional':
+            domainSubcategories = CONSTITUTIONAL_SUBCATEGORIES;
+            break;
+        }
 
         const domainCategories = CATEGORIES.filter(c => c.domain === state.selectedDomain);
         const classification = await caseGeneratorService.classifyCase(
           generatedCase,
           domainCategories,
-          CIVIL_SUBCATEGORIES
+          domainSubcategories
         );
 
         if (classification.category && finalCategories.length === 0) {
@@ -245,7 +262,9 @@ export const CaseGenerator = () => {
           <ArticleSelector
             selectedDomain={state.selectedDomain!}
             selectedArticles={state.selectedArticles}
+            subcategory={state.subcategory}
             onChange={handleArticlesChange}
+            onSubcategoryChange={handleSubcategoryChange}
           />
         )}
 
@@ -259,10 +278,8 @@ export const CaseGenerator = () => {
 
         {currentStep === 5 && (
           <ConfigurationPanel
-            selectedDomain={state.selectedDomain}
             difficultyLevel={state.difficultyLevel}
             weekNumber={state.weekNumber}
-            subcategory={state.subcategory}
             onChange={handleConfigurationChange}
             onGenerate={handleGenerate}
             isGenerating={state.isGenerating}

@@ -7,6 +7,7 @@ import { useAssessment } from '../hooks/useAssessment';
 import { Logo } from './Logo';
 import { FeedbackDialog } from './FeedbackDialog';
 import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
+import { PENAL_LAW_CATEGORIES } from '../constants/penalLawCategories';
 import { CONSTITUTIONAL_LAW_CATEGORIES } from '../constants/constitutionalLawCategories';
 import type { Case } from '../types/case';
 import type { ChatContext } from '../types/chat';
@@ -80,6 +81,22 @@ const lawCategories: LawDomain[] = [
     }])
   },
   {
+    id: 'penal',
+    code: 'PEN',
+    name: 'Drept Penal',
+    categories: PENAL_LAW_CATEGORIES.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      description: cat.description,
+      subcategories: cat.subcategories.map(subcat => `${cat.name} (${subcat})`)
+    })).concat([{
+      id: 'altele_penal',
+      name: 'Altele',
+      description: 'Cazuri fără categorie specifică',
+      subcategories: ['Altele']
+    }])
+  },
+  {
     id: 'constitutional',
     code: 'CON',
     name: 'Drept Constitutional',
@@ -103,6 +120,7 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [expandedCivilCategory, setExpandedCivilCategory] = useState<string | null>('persoane_fizice');
+  const [expandedPenalCategory, setExpandedPenalCategory] = useState<string | null>(null);
   const [expandedConstitutionalCategory, setExpandedConstitutionalCategory] = useState<string | null>(null);
   const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoane fizice (Capacitatea de exercițiu)');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);

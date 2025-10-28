@@ -1,6 +1,9 @@
 // Case Generator Data - Domains and Categories
 
 import type { DomainOption, CategoryOption } from '../types/caseGenerator';
+import { CIVIL_LAW_CATEGORIES, getAllCivilSubcategories } from './civilLawCategories';
+import { CONSTITUTIONAL_LAW_CATEGORIES, getAllConstitutionalSubcategories } from './constitutionalLawCategories';
+import { PENAL_LAW_CATEGORIES, getAllPenalSubcategories } from './penalLawCategories';
 
 export const DOMAINS: DomainOption[] = [
   {
@@ -20,172 +23,45 @@ export const DOMAINS: DomainOption[] = [
   }
 ];
 
-// Civil law subcategories for the dropdown
-export const CIVIL_SUBCATEGORIES = [
-  'Persoana fizică (Capacitatea de folosință. Declararea judecătorească a morții)',
-  'Persoana fizică (Capacitatea de exercițiu)',
-  'Persoana fizică (Ocrotirea incapabilului)',
-  'Persoana fizică (Elemente de identificare. Starea civilă)',
-  'Persoana juridică (Noțiune, Capacitate)',
-  'Persoana juridică (Funcționarea persoanei juridice)',
-  'Exercitarea drepturilor subiective civile. Abuzul de drept',
-  'Apărarea drepturilor nepatrimoniale',
-  'Aplicarea legii civile în timp și spațiu I',
-  'Aplicarea legii civile în timp și spațiu II',
-  'Altele'
-];
+// Civil law subcategories - imported from civilLawCategories.ts
+export const CIVIL_SUBCATEGORIES = getAllCivilSubcategories();
+
+// Penal law subcategories - imported from penalLawCategories.ts
+export const PENAL_SUBCATEGORIES = getAllPenalSubcategories();
+
+// Constitutional law subcategories - imported from constitutionalLawCategories.ts
+export const CONSTITUTIONAL_SUBCATEGORIES = getAllConstitutionalSubcategories();
+
+// Convert CIVIL_LAW_CATEGORIES to CategoryOption format
+const CIVIL_CATEGORIES: CategoryOption[] = CIVIL_LAW_CATEGORIES.map(cat => ({
+  id: cat.id,
+  name: cat.name,
+  domain: 'civil' as const
+}));
+
+// Convert PENAL_LAW_CATEGORIES to CategoryOption format
+const PENAL_CATEGORIES: CategoryOption[] = PENAL_LAW_CATEGORIES.map(cat => ({
+  id: cat.id,
+  name: cat.name,
+  domain: 'penal' as const
+}));
+
+// Convert CONSTITUTIONAL_LAW_CATEGORIES to CategoryOption format
+const CONSTITUTIONAL_CATEGORIES: CategoryOption[] = CONSTITUTIONAL_LAW_CATEGORIES.map(cat => ({
+  id: cat.id,
+  name: cat.name,
+  domain: 'constitutional' as const
+}));
 
 export const CATEGORIES: CategoryOption[] = [
-  // DREPT CIVIL
-  {
-    id: 'civil_persons',
-    name: 'Persoane fizice și juridice (capacitate, domiciliu, personalitate juridică)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_contracts_general',
-    name: 'Contracte generale (formare, efecte, interpretare, nulitate)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_contracts_special',
-    name: 'Contracte speciale (vânzare, locațiune, mandat, întreprindere)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_property',
-    name: 'Bunuri și proprietate (clasificare, drepturi reale, posesia, publicitate)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_obligations',
-    name: 'Obligații (izvoare, executare, prescripție)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_liability',
-    name: 'Răspundere civilă delictuală (culpă, prejudiciu, raport cauzal)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_guarantees',
-    name: 'Garanții reale (ipotecă, gaj, privilegii)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_family',
-    name: 'Familie (căsătorie, divorț, filație)',
-    domain: 'civil'
-  },
-  {
-    id: 'civil_succession',
-    name: 'Succesiuni (moștenire legală/testamentară)',
-    domain: 'civil'
-  },
+  // DREPT CIVIL - Use the comprehensive structure from civilLawCategories.ts
+  ...CIVIL_CATEGORIES,
 
-  // DREPT PENAL
-  {
-    id: 'penal_general_theory',
-    name: 'Teoria generală (element material, vinovăție, tentativă)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_life_integrity',
-    name: 'Infracțiuni contra vieții și integrității (omor, vătămare)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_property',
-    name: 'Infracțiuni contra patrimoniului (furt, înșelăciune, tâlhărie)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_authority',
-    name: 'Infracțiuni contra autorității (ultraj, evadare)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_participation',
-    name: 'Participație penală (autor, complice, instigator)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_sanctions',
-    name: 'Sancțiuni penale (pedeapsă, măsuri de siguranță)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_justification',
-    name: 'Cauze de justificare și nepedepsire (legitimă apărare)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_corruption',
-    name: 'Infracțiuni de corupție (luare/dare mită)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_economic',
-    name: 'Infracțiuni economice (evaziune, spălare bani, abuz în serviciu)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_public_safety',
-    name: 'Infracțiuni contra siguranței publice (incendiu, explozie)',
-    domain: 'penal'
-  },
-  {
-    id: 'penal_concurrence',
-    name: 'Concurs de infracțiuni și recidivă',
-    domain: 'penal'
-  },
+  // DREPT PENAL - Use the comprehensive structure from penalLawCategories.ts
+  ...PENAL_CATEGORIES,
 
-  // DREPT CONSTITUȚIONAL
-  {
-    id: 'const_fundamental_rights',
-    name: 'Drepturi fundamentale (libertate, egalitate, proprietate)',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_public_authorities',
-    name: 'Organizarea autorităților publice (Parlament, Guvern)',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_control',
-    name: 'Controlul de constituționalitate (CCR, excepție)',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_sovereignty',
-    name: 'Suveranitatea și cetățenia',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_separation',
-    name: 'Separația puterilor în stat',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_revision',
-    name: 'Revizuirea Constituției (limite, procedură)',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_administration',
-    name: 'Administrația publică (principii, funcționar)',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_autonomy',
-    name: 'Autonomia locală și descentralizare',
-    domain: 'constitutional'
-  },
-  {
-    id: 'const_eu',
-    name: 'Integrarea europeană și drept UE',
-    domain: 'constitutional'
-  }
+  // DREPT CONSTITUȚIONAL - Use the comprehensive structure from constitutionalLawCategories.ts
+  ...CONSTITUTIONAL_CATEGORIES
 ];
 
 export const DIFFICULTY_OPTIONS = [
@@ -232,4 +108,15 @@ export function generateCaseCode(domain: string, weekNumber: number): string {
                   String.fromCharCode(65 + Math.floor(Math.random() * 26)) +
                   String.fromCharCode(65 + Math.floor(Math.random() * 26));
   return `${prefix}${weekNumber}${letters}`;
+}
+
+// Export the law categories structures for use in components
+export { CIVIL_LAW_CATEGORIES } from './civilLawCategories';
+export { PENAL_LAW_CATEGORIES } from './penalLawCategories';
+export { CONSTITUTIONAL_LAW_CATEGORIES } from './constitutionalLawCategories';
+
+// Helper to get category name by ID
+export function getCategoryNameById(categoryId: string): string | null {
+  const category = CATEGORIES.find(c => c.id === categoryId);
+  return category ? category.name : null;
 }
