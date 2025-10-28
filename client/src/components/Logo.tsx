@@ -1,6 +1,19 @@
-export const Logo = () => {
+interface LogoProps {
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+export const Logo = ({ size = 'md' }: LogoProps) => {
+  const dimensions = {
+    sm: { width: 80, height: 27 },
+    md: { width: 120, height: 40 },
+    lg: { width: 160, height: 53 },
+    xl: { width: 200, height: 67 }
+  };
+
+  const { width, height } = dimensions[size];
+
   return (
-    <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={width} height={height} viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
       {/* Scales of justice - minimalist icon */}
       <g className="logo-icon">
         {/* Base */}
