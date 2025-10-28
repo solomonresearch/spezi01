@@ -132,6 +132,7 @@ export const Dashboard = () => {
   const [selectedCodeType, setSelectedCodeType] = useState<'civil' | 'constitution' | 'criminal'>('civil');
   const [civilCodeText, setCivilCodeText] = useState<string>('');
   const [constitutionText, setConstitutionText] = useState<string>('');
+  const [criminalCodeText, setCriminalCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   // Search state
@@ -275,9 +276,6 @@ export const Dashboard = () => {
   }, [isResizing]);
 
   const loadCode = async (codeType: 'civil' | 'constitution' | 'criminal') => {
-    // Don't load criminal code (not available yet)
-    if (codeType === 'criminal') return;
-
     setLoading(true);
     try {
       let fileName = '';
@@ -289,6 +287,9 @@ export const Dashboard = () => {
       } else if (codeType === 'constitution') {
         fileName = '/constitutie.txt';
         setter = setConstitutionText;
+      } else if (codeType === 'criminal') {
+        fileName = '/codpenal.txt';
+        setter = setCriminalCodeText;
       } else {
         return;
       }
@@ -1252,15 +1253,23 @@ Concluzia:
                   </TabsContent>
 
                   <TabsContent value="criminal" className="h-full m-0">
-                    <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
-                      <div className="rounded-full bg-muted p-6">
-                        <Shield className="h-12 w-12 text-muted-foreground" />
+                    {loading ? (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">
+                          Se încarcă Codul Penal...
+                        </p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-lg font-semibold text-foreground">În curând</p>
-                        <p className="text-sm text-muted-foreground">Acest cod nu este disponibil încă</p>
+                    ) : criminalCodeText ? (
+                      <ScrollArea className="h-full">
+                        <pre className="text-xs font-mono whitespace-pre-wrap">
+                          {criminalCodeText}
+                        </pre>
+                      </ScrollArea>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-sm text-muted-foreground">Nu există text</p>
                       </div>
-                    </div>
+                    )}
                   </TabsContent>
                 </div>
               </Tabs>
@@ -1337,15 +1346,23 @@ Concluzia:
                 </TabsContent>
 
                 <TabsContent value="criminal" className="h-full m-0 p-4">
-                  <div className="flex flex-col items-center justify-center h-full space-y-4 text-center">
-                    <div className="rounded-full bg-muted p-6">
-                      <Shield className="h-12 w-12 text-muted-foreground" />
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">
+                        Se încarcă Codul Penal...
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-lg font-semibold text-foreground">În curând</p>
-                      <p className="text-sm text-muted-foreground">Acest cod nu este disponibil încă</p>
+                  ) : criminalCodeText ? (
+                    <ScrollArea className="h-full">
+                      <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+                        {criminalCodeText}
+                      </pre>
+                    </ScrollArea>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-sm text-muted-foreground">Nu există text</p>
                     </div>
-                  </div>
+                  )}
                 </TabsContent>
               </CardContent>
             </Tabs>
