@@ -662,6 +662,9 @@ Concluzia:
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  Setări
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/reporting')}>
                   Progress
                 </DropdownMenuItem>

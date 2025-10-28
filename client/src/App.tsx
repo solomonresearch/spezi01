@@ -7,6 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { AdminPanel } from './components/AdminPanel';
 import { Reporting } from './components/Reporting';
 import { CaseGenerator } from './components/CaseGenerator';
+import { UserSettings } from './components/UserSettings';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Toaster } from '@/components/ui/sonner';
 import './App.css';
@@ -50,6 +51,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CaseGenerator />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <UserSettings />
               </ProtectedRoute>
             }
           />

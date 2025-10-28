@@ -17,6 +17,10 @@ interface DBUserProfile {
   name: string;
   username: string;
   is_admin: boolean;
+  university_code?: string;
+  university_category?: string;
+  university_name?: string;
+  created_at?: string;
 }
 
 interface AuthContextType {
@@ -54,7 +58,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id, email, name, username, is_admin')
+        .select('id, email, name, username, is_admin, university_code, university_category, university_name, created_at')
         .eq('id', userId)
         .single();
 
