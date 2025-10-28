@@ -34,12 +34,12 @@ export const SignUp = () => {
       });
 
       if (error) {
-        // If function doesn't exist yet, check manually
+        // If function doesn't exist yet, check manually (case-insensitive)
         const { data: profiles } = await supabase
           .from('user_profiles')
           .select('username')
-          .eq('username', username)
-          .single();
+          .ilike('username', username)
+          .maybeSingle();
 
         setUsernameAvailable(!profiles);
       } else {
