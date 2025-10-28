@@ -1400,12 +1400,9 @@ Concluzia:
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-muted/30 py-4 px-4">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <span>© {new Date().getFullYear()} Spezi01</span>
-          </div>
-          <div className="flex items-center gap-1 text-center">
+      <footer className="border-t border-border bg-muted/30 py-3 px-4">
+        <div className="container mx-auto flex items-center justify-center">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span>❤️</span>
             <span>Made with love for students</span>
             <span>❤️</span>
