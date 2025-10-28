@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Logo } from './Logo';
 import { FeedbackDialog } from './FeedbackDialog';
+import { PasswordResetDialog } from './PasswordResetDialog';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -60,9 +61,8 @@ export const Login = () => {
             <Logo size="xl" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">Spezi01</h1>
             <Badge variant="outline" className="bg-white/10 text-white border-white/30">
-              Versiune experimentală
+              versiunea v0.1
             </Badge>
           </div>
           <div className="max-w-lg mx-auto space-y-3 text-white/90">
@@ -72,16 +72,6 @@ export const Login = () => {
             <p className="text-sm leading-relaxed">
               Te ajutăm să devii un jurist mai bun, să treci examenele cu succes și să acumulezi
               cunoștințele necesare pentru a-i ajuta pe alții. Învățăm împreună, creștem împreună.
-            </p>
-            <div className="pt-2">
-              <FeedbackDialog
-                variant="outline"
-                size="sm"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30"
-              />
-            </div>
-            <p className="text-xs text-white/70 italic">
-              Orice feedback este binevenit și ne ajută să îmbunătățim platforma! 🙏
             </p>
           </div>
         </div>
@@ -109,7 +99,10 @@ export const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <PasswordResetDialog />
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -139,6 +132,18 @@ export const Login = () => {
             </p>
           </CardFooter>
         </Card>
+
+        {/* Feedback Section - Bottom of Page */}
+        <div className="text-center space-y-3 pb-8">
+          <FeedbackDialog
+            variant="outline"
+            size="sm"
+            className="bg-white/10 hover:bg-white/20 text-white border-white/30"
+          />
+          <p className="text-xs text-white/70 italic">
+            Orice feedback este binevenit și ne ajută să îmbunătățim platforma! 🙏
+          </p>
+        </div>
       </div>
     </div>
   );
