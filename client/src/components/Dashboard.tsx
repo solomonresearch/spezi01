@@ -120,7 +120,6 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const [expandedCategory, setExpandedCategory] = useState<string | null>('civil');
   const [expandedCivilCategory, setExpandedCivilCategory] = useState<string | null>('persoane_fizice');
-  const [expandedPenalCategory, setExpandedPenalCategory] = useState<string | null>(null);
   const [expandedConstitutionalCategory, setExpandedConstitutionalCategory] = useState<string | null>(null);
   const [expandedSubcategory, setExpandedSubcategory] = useState<string | null>('Persoane fizice (Capacitatea de exercițiu)');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);

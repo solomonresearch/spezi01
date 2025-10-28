@@ -278,6 +278,8 @@ export const CaseGenerator = () => {
 
         {currentStep === 5 && (
           <ConfigurationPanel
+            selectedDomain={state.selectedDomain}
+            subcategory={state.subcategory}
             difficultyLevel={state.difficultyLevel}
             weekNumber={state.weekNumber}
             onChange={handleConfigurationChange}
