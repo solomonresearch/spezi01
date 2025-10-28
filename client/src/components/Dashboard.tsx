@@ -342,7 +342,9 @@ Concluzia:
       {/* Compact Header */}
       <header className="app-header">
         <div className="header-left">
-          <Logo />
+          <button className="logo-btn" onClick={() => navigate('/dashboard')} title="Go to Dashboard">
+            <Logo />
+          </button>
           <span className="beta-badge">Beta v0.1</span>
         </div>
         <div className="user-menu">
