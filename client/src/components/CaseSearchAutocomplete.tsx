@@ -198,7 +198,7 @@ export function CaseSearchAutocomplete({ onSelectCase, placeholder }: Props) {
                 {results.map((result, index) => (
                   <li key={result.id} role="option" aria-selected={index === selectedIndex}>
                     <button
-                        ref={(el) => (resultRefs.current[index] = el)}
+                        ref={(el) => { resultRefs.current[index] = el; }}
                         onClick={() => handleSelect(result)}
                         onMouseEnter={() => setSelectedIndex(index)}
                         className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
@@ -224,7 +224,9 @@ export function CaseSearchAutocomplete({ onSelectCase, placeholder }: Props) {
                               {highlightMatch(result.case_code, query)}
                             </span>
                             {result.verified && (
-                              <Check className="h-3 w-3 text-green-600" title="Verificat" />
+                              <span title="Verificat">
+                                <Check className="h-3 w-3 text-green-600" />
+                              </span>
                             )}
                           </div>
                           <p className="text-sm line-clamp-2">
