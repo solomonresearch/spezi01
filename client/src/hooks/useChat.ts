@@ -8,7 +8,7 @@ import type { ChatMessage, ChatContext } from '../types/chat';
 const INITIAL_MESSAGE: ChatMessage = {
   id: '0',
   role: 'assistant',
-  content: 'Salut! Te ghidez in 3 runde sa rezolvi speta!',
+  content: 'Salut! Te ghidez in 4 runde sa rezolvi speta!',
   timestamp: new Date()
 };
 

@@ -1143,7 +1143,7 @@ Concluzia:
               <SheetHeader className="px-4 py-3 border-b">
                 <SheetTitle className="flex items-center gap-2">
                   <Bot className="h-5 w-5" />
-                  AI Assistant
+                  spezi AI
                 </SheetTitle>
               </SheetHeader>
               <div className="flex-1 flex flex-col overflow-hidden">
@@ -1302,7 +1302,7 @@ Concluzia:
         </div>
 
         {/* Right Sidebar - Code + Chat (Hidden on mobile) */}
-        <aside className="hidden lg:flex w-[450px] border-l border-border flex-col bg-background">
+        <aside className="hidden lg:flex w-[450px] border-l border-border flex-col bg-background overflow-y-auto">
           {/* Legal Code Display */}
           <Card
             className="rounded-none border-0 border-b flex flex-col"
@@ -1402,14 +1402,14 @@ Concluzia:
           </div>
 
           {/* AI Chat with Card */}
-          <Card className="flex-1 flex flex-col">
+          <Card className="flex-1 flex flex-col overflow-hidden">
             <CardHeader className="border-b">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Bot className="h-5 w-5" />
-                AI Assistant
+                spezi AI
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-0">
+            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-3">
                   {messages.map((message) => (

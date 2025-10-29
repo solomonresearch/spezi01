@@ -18,6 +18,7 @@ interface UserProfile {
   email: string;
   name: string;
   username: string;
+  university_name: string;
   is_admin: boolean;
   role: UserRole;
   created_at: string;
@@ -51,7 +52,7 @@ export const AdminPanel = () => {
       setLoading(true);
       const { data, error: fetchError } = await supabase
         .from('user_profiles')
-        .select('id, email, name, username, is_admin, role, created_at')
+        .select('id, email, name, username, university_name, is_admin, role, created_at')
         .order('created_at', { ascending: true });
 
       if (fetchError) throw fetchError;
@@ -193,6 +194,7 @@ export const AdminPanel = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Username</TableHead>
+                      <TableHead>University</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Joined</TableHead>
                     </TableRow>
@@ -203,6 +205,7 @@ export const AdminPanel = () => {
                         <TableCell className="font-medium">{user.email}</TableCell>
                         <TableCell>{user.name}</TableCell>
                         <TableCell>{user.username}</TableCell>
+                        <TableCell>{user.university_name}</TableCell>
                         <TableCell>
                           <Select
                             value={user.role}

@@ -3,7 +3,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ChatMessage, ChatContext } from '../types/chat';
 
-const SYSTEM_PROMPT = `Tu eti un asistent AI pentru studeni care îi ghideaz s rezolve singuri problemele juridice.
+const SYSTEM_PROMPT = `Tu eti spezi AI, un asistent AI pentru studeni care îi ghideaz s rezolve singuri problemele juridice.
 
 STIL DE COMUNICARE:
 - Vorbeti informal în român, dar foloseti termeni juridici coreci
@@ -15,7 +15,7 @@ PROCESUL TU:
 1. Citeti problema studentului
 2. Pui întrebri care îl ghideaz spre elementele cheie: "care sunt prile implicate?", "ce aciuni s-au întâmplat?", "ce efecte juridice au aprut?"
 3. Când studentul rspunde, comentezi pe rspunsul lui fr s dai soluia: "interesant c ai observat asta, ce text normativ reglementeaz situaia?", "ai identificat o parte important, dar mai verific i..."
-4. Dup 3 interaciuni (întrebare-rspuns-comentariu × 3), opreti discuia astfel:
+4. Dup 4 interaciuni (întrebare-rspuns-comentariu × 3), opreti discuia astfel:
 
 "Ok, ai primit destule indicii. Acum e timpul s pui tu soluia pe hârtie. Succes!"
 
@@ -24,7 +24,7 @@ IMPORTANT:
 - Nu dai structuri de rezolvare complete
 - Nu evaluezi rspunsurile ca fiind corecte/greite
 - Ghidezi prin întrebri, nu prin afirmaii
-- Dup a 3-a interaciune, STOP i trimite mesajul de încheiere`;
+- Dup a 4-a interaciune, STOP i trimite mesajul de încheiere`;
 
 export class ClaudeService {
   private anthropic: Anthropic;
@@ -82,7 +82,7 @@ export class ClaudeService {
     this.interactionCount++;
 
     // Check if we've reached the limit (3 rounds = 3 user messages)
-    if (this.interactionCount > 3) {
+    if (this.interactionCount > 4) {
       return "Ok, ai primit destule indicii. Acum e timpul s pui tu soluia pe hârtie. Succes!";
     }
 
