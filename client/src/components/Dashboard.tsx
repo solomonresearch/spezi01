@@ -669,7 +669,7 @@ Concluzia:
               size="sm"
             >
               <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Generator de Cazuri</span>
+              <span className="hidden sm:inline">Generator de spezi</span>
               <span className="sm:hidden">Generator</span>
             </Button>
             <Button

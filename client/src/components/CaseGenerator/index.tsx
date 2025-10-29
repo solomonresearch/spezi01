@@ -187,7 +187,7 @@ export const CaseGenerator = () => {
         <header className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-center mb-2 flex items-center justify-center gap-2">
             <Bot className="h-8 w-8" />
-            Generator de Cazuri Juridice
+            Generator de spezi
           </h1>
           <p className="text-center text-muted-foreground">
             Generare automată de cazuri practice cu AI

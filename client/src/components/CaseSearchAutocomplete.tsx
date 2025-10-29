@@ -16,6 +16,7 @@ interface Props {
  * - Keyboard navigation (Arrow Up/Down, Enter, Escape)
  * - Click outside to close
  * - Highlights matching text in results
+ * - Scrollable dropdown with max height of 400px
  */
 export function CaseSearchAutocomplete({ onSelectCase, placeholder }: Props) {
   const [query, setQuery] = useState('');
@@ -181,7 +182,7 @@ export function CaseSearchAutocomplete({ onSelectCase, placeholder }: Props) {
           ref={dropdownRef}
           id="search-results"
           role="listbox"
-          className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-[400px] overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 overflow-hidden"
         >
           <ScrollArea className="max-h-[400px]">
             {error ? (
@@ -197,53 +198,53 @@ export function CaseSearchAutocomplete({ onSelectCase, placeholder }: Props) {
                 {results.map((result, index) => (
                   <li key={result.id} role="option" aria-selected={index === selectedIndex}>
                     <button
-                      ref={(el) => (resultRefs.current[index] = el)}
-                      onClick={() => handleSelect(result)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
-                        index === selectedIndex
-                          ? 'bg-accent'
-                          : 'hover:bg-accent/50'
-                      }`}
-                    >
-                      {/* Difficulty Badge */}
-                      <div className="flex-shrink-0 pt-1">
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full ${getDifficultyColor(
-                            result.level
-                          )}`}
-                          title={result.level}
-                        />
-                      </div>
-
-                      {/* Case Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-xs font-semibold text-primary">
-                            {highlightMatch(result.case_code, query)}
-                          </span>
-                          {result.verified && (
-                            <Check className="h-3 w-3 text-green-600" title="Verificat" />
-                          )}
+                        ref={(el) => (resultRefs.current[index] = el)}
+                        onClick={() => handleSelect(result)}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
+                          index === selectedIndex
+                            ? 'bg-accent'
+                            : 'hover:bg-accent/50'
+                        }`}
+                      >
+                        {/* Difficulty Badge */}
+                        <div className="flex-shrink-0 pt-1">
+                          <span
+                            className={`inline-block w-2 h-2 rounded-full ${getDifficultyColor(
+                              result.level
+                            )}`}
+                            title={result.level}
+                          />
                         </div>
-                        <p className="text-sm line-clamp-2">
-                          {highlightMatch(result.title, query)}
-                        </p>
-                        {(result.category || result.subcategory) && (
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            {result.category && (
-                              <Badge variant="outline" className="text-xs">
-                                {result.category}
-                              </Badge>
-                            )}
-                            {result.subcategory && (
-                              <span className="text-xs text-muted-foreground truncate">
-                                {result.subcategory}
-                              </span>
+
+                        {/* Case Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-mono text-xs font-semibold text-primary">
+                              {highlightMatch(result.case_code, query)}
+                            </span>
+                            {result.verified && (
+                              <Check className="h-3 w-3 text-green-600" title="Verificat" />
                             )}
                           </div>
-                        )}
-                      </div>
+                          <p className="text-sm line-clamp-2">
+                            {highlightMatch(result.title, query)}
+                          </p>
+                          {(result.category || result.subcategory) && (
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              {result.category && (
+                                <Badge variant="outline" className="text-xs">
+                                  {result.category}
+                                </Badge>
+                              )}
+                              {result.subcategory && (
+                                <span className="text-xs text-muted-foreground truncate">
+                                  {result.subcategory}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                     </button>
                   </li>
                 ))}
