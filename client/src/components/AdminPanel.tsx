@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, type UserRole } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Logo } from './Logo';
@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Shield, Users, BarChart3, FolderKanban, Settings, MessageSquare } from 'lucide-react';
 import { feedbackService } from '../services/feedbackService';
 import type { Feedback } from '../services/feedbackService';
+import { toast, Toaster } from 'sonner';
 
 interface UserProfile {
   id: string;
@@ -17,6 +19,7 @@ interface UserProfile {
   name: string;
   username: string;
   is_admin: boolean;
+  role: UserRole;
   created_at: string;
 }
 
@@ -48,7 +51,7 @@ export const AdminPanel = () => {
       setLoading(true);
       const { data, error: fetchError } = await supabase
         .from('user_profiles')
-        .select('id, email, name, username, is_admin, created_at')
+        .select('id, email, name, username, is_admin, role, created_at')
         .order('created_at', { ascending: true });
 
       if (fetchError) throw fetchError;
@@ -60,6 +63,51 @@ export const AdminPanel = () => {
       setError('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateUserRole = async (userId: string, newRole: UserRole) => {
+    try {
+      // Find the user being updated
+      const user = users.find(u => u.id === userId);
+      const userName = user?.name || user?.username || user?.email || 'User';
+
+      console.log(`🔄 Updating role for ${userName} (${userId}) to ${newRole}...`);
+
+      // Update the role using RPC function (bypasses RLS)
+      const { data, error: updateError } = await supabase
+        .rpc('update_user_role', {
+          p_user_id: userId,
+          p_new_role: newRole
+        });
+
+      if (updateError) {
+        console.error('❌ Supabase update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('✅ Database updated successfully:', data);
+
+      // Update the local state for immediate UI feedback
+      setUsers(users.map(user =>
+        user.id === userId
+          ? { ...user, role: newRole, is_admin: newRole === 'admin' }
+          : user
+      ));
+
+      // Show success toast
+      const roleLabel = newRole === 'admin' ? 'Admin' : newRole === 'moderator' ? 'Moderator' : 'User';
+      toast.success(`Rol actualizat cu succes`, {
+        description: `${userName} este acum ${roleLabel}.`
+      });
+
+      console.log(`✅ Role successfully persisted to Supabase for ${userName}`);
+    } catch (err) {
+      console.error('❌ Error updating user role:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Eroare necunoscută';
+      toast.error('Eroare la actualizarea rolului', {
+        description: errorMessage
+      });
     }
   };
 
@@ -100,6 +148,7 @@ export const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-prussian-blue-500/10 to-air-blue-500/10">
+      <Toaster position="top-right" richColors />
       <header className="bg-background border-b border-border sticky top-0 z-10">
         <div className="container max-w-7xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
@@ -144,7 +193,7 @@ export const AdminPanel = () => {
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Username</TableHead>
-                      <TableHead>Admin</TableHead>
+                      <TableHead>Role</TableHead>
                       <TableHead>Joined</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -155,9 +204,37 @@ export const AdminPanel = () => {
                         <TableCell>{user.name}</TableCell>
                         <TableCell>{user.username}</TableCell>
                         <TableCell>
-                          <Badge variant={user.is_admin ? 'default' : 'secondary'}>
-                            {user.is_admin ? 'Yes' : 'No'}
-                          </Badge>
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole) => updateUserRole(user.id, newRole as UserRole)}
+                          >
+                            <SelectTrigger className="w-[140px]">
+                              <SelectValue>
+                                <Badge
+                                  variant={
+                                    user.role === 'admin'
+                                      ? 'default'
+                                      : user.role === 'moderator'
+                                      ? 'outline'
+                                      : 'secondary'
+                                  }
+                                >
+                                  {user.role === 'admin' ? 'Admin' : user.role === 'moderator' ? 'Moderator' : 'User'}
+                                </Badge>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">
+                                <Badge variant="secondary">User</Badge>
+                              </SelectItem>
+                              <SelectItem value="moderator">
+                                <Badge variant="outline">Moderator</Badge>
+                              </SelectItem>
+                              <SelectItem value="admin">
+                                <Badge variant="default">Admin</Badge>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {new Date(user.created_at).toLocaleDateString()}

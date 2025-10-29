@@ -3,7 +3,7 @@ import { CheckCircle, Sparkles, SquarePen, AlertCircle, RefreshCw, Plus, Trash2,
 import type { GeneratedCase, ArticleReference, DifficultyLevel, LegalDomain } from '../../types/caseGenerator';
 import type { CaseToSave } from '../../types/caseGenerator';
 import { saveCaseToSupabase } from '../../services/saveCaseToSupabase';
-import { CATEGORIES, CIVIL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
+import { CATEGORIES, CIVIL_SUBCATEGORIES, CONSTITUTIONAL_SUBCATEGORIES } from '../../constants/caseGeneratorData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,16 +40,26 @@ export const GeneratedCaseEditor = ({
 }: GeneratedCaseEditorProps) => {
   const [editedCase, setEditedCase] = useState<GeneratedCase>(caseData);
   const [editedCaseCode, setEditedCaseCode] = useState(caseCode);
-  const [editedCategory, setEditedCategory] = useState<string>(selectedCategories[0] || '');
+
+  // Get available categories for the selected domain
+  const availableCategories = CATEGORIES.filter(c => c.domain === selectedDomain);
+
+  // Get subcategories based on domain
+  const availableSubcategories =
+    selectedDomain === 'civil' ? CIVIL_SUBCATEGORIES :
+    selectedDomain === 'constitutional' ? CONSTITUTIONAL_SUBCATEGORIES :
+    [];
+
+  // Initialize category with NAME (not ID)
+  const initialCategory = selectedCategories[0]
+    ? availableCategories.find(c => c.id === selectedCategories[0])?.name || ''
+    : '';
+
+  const [editedCategory, setEditedCategory] = useState<string>(initialCategory);
   const [editedSubcategory, setEditedSubcategory] = useState<string>(subcategory || '');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-  // Get available categories for the selected domain
-  const availableCategories = CATEGORIES.filter(c => c.domain === selectedDomain);
-  // For now, only civil domain has subcategories
-  const availableSubcategories = selectedDomain === 'civil' ? CIVIL_SUBCATEGORIES : [];
 
   // Update handlers
   const updateField = (field: keyof GeneratedCase, value: any) => {
@@ -158,8 +168,9 @@ export const GeneratedCaseEditor = ({
     if (!editedCase.question.trim()) {
       errors.push('Întrebarea este obligatorie');
     }
-    if (!editedSubcategory && selectedDomain === 'civil') {
-      errors.push('Subcategoria este obligatorie pentru cazuri civile');
+    if (!editedSubcategory && (selectedDomain === 'civil' || selectedDomain === 'constitutional')) {
+      const domainName = selectedDomain === 'civil' ? 'civile' : 'constituționale';
+      errors.push(`Subcategoria este obligatorie pentru cazuri ${domainName}`);
     }
     // Check for valid analysis steps (not empty)
     const validSteps = editedCase.analysis_steps.filter(step => step.description && step.description.trim().length > 0);
@@ -189,6 +200,7 @@ export const GeneratedCaseEditor = ({
       legal_problem: editedCase.legal_problem.trim(),
       case_description: editedCase.case_description.trim(),
       question: editedCase.question.trim(),
+      category: editedCategory || null,
       subcategory: editedSubcategory || null,
       verified: false,
       articles: selectedArticles,
@@ -344,14 +356,14 @@ export const GeneratedCaseEditor = ({
               </SelectTrigger>
               <SelectContent className="max-h-[300px] overflow-y-auto">
                 {availableCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
+                  <SelectItem key={cat.id} value={cat.name}>
                     {cat.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Categoria ajută la organizarea cazurilor (informativ, nu se salvează în baza de date)
+              Selectează categoria principală pentru acest caz
             </p>
           </div>
 
@@ -376,7 +388,9 @@ export const GeneratedCaseEditor = ({
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {selectedDomain === 'civil' && 'Subcategoria este obligatorie pentru cazuri civile'}
+              {(selectedDomain === 'civil' || selectedDomain === 'constitutional') &&
+                `Subcategoria este obligatorie pentru cazuri ${selectedDomain === 'civil' ? 'civile' : 'constituționale'}`
+              }
             </p>
           </div>
         </div>
@@ -531,7 +545,7 @@ export const GeneratedCaseEditor = ({
             ) : (
               <>
                 <CheckCircle className="h-5 w-5" />
-                Trimite către Supabase
+                Salvează
               </>
             )}
           </Button>

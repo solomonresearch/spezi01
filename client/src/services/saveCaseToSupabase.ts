@@ -28,14 +28,23 @@ export async function saveCaseToSupabase(caseData: CaseToSave): Promise<string> 
   console.log('💾 Saving case to Supabase...', caseData.case_code);
 
   try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      throw new Error('Trebuie să fii autentificat pentru a salva cazuri');
+    }
+
     // Format level to match database constraint
     const formattedLevel = formatLevelForDatabase(caseData.level);
     console.log(`📝 Formatted level: "${caseData.level}" → "${formattedLevel}"`);
+    console.log(`👤 User ID: ${user.id}`);
 
     // Step 1: Insert into cases table
     const { data: caseRow, error: caseError } = await supabase
       .from('cases')
       .insert({
+        user_id: user.id, // Add user_id for RLS policy
         case_code: caseData.case_code,
         title: caseData.title,
         level: formattedLevel,
@@ -43,6 +52,7 @@ export async function saveCaseToSupabase(caseData: CaseToSave): Promise<string> 
         legal_problem: caseData.legal_problem,
         case_description: caseData.case_description,
         question: caseData.question,
+        category: caseData.category,
         subcategory: caseData.subcategory,
         verified: false // Always false for AI-generated cases
       })

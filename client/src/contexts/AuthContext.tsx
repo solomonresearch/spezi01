@@ -11,12 +11,15 @@ interface UserProfile {
   university_name: string;
 }
 
+export type UserRole = 'user' | 'moderator' | 'admin';
+
 interface DBUserProfile {
   id: string;
   email: string;
   name: string;
   username: string;
   is_admin: boolean;
+  role: UserRole;
   university_code?: string;
   university_category?: string;
   university_name?: string;
@@ -58,7 +61,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('id, email, name, username, is_admin, university_code, university_category, university_name, created_at')
+        .select('id, email, name, username, is_admin, role, university_code, university_category, university_name, created_at')
         .eq('id', userId)
         .single();
 
@@ -67,7 +70,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         return null;
       }
 
-      return data as DBUserProfile;
+      // Ensure role field exists (fallback for users before migration)
+      const profile = data as DBUserProfile;
+      if (!profile.role) {
+        profile.role = profile.is_admin ? 'admin' : 'user';
+      }
+
+      return profile;
     } catch (error) {
       console.error('Exception while fetching profile:', error);
       return null;

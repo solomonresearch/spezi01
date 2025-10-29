@@ -77,6 +77,7 @@ export interface CaseToSave {
   legal_problem: string;
   case_description: string;
   question: string;
+  category: string | null;
   subcategory: string | null;
   verified: boolean;
 
