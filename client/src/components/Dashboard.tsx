@@ -6,10 +6,12 @@ import { useChat } from '../hooks/useChat';
 import { useAssessment } from '../hooks/useAssessment';
 import { Logo } from './Logo';
 import { FeedbackDialog } from './FeedbackDialog';
+import { CaseSearchAutocomplete } from './CaseSearchAutocomplete';
 import { CIVIL_LAW_CATEGORIES } from '../constants/civilLawCategories';
 import { PENAL_LAW_CATEGORIES } from '../constants/penalLawCategories';
 import { CONSTITUTIONAL_LAW_CATEGORIES } from '../constants/constitutionalLawCategories';
 import type { Case } from '../types/case';
+import type { CaseSearchResult } from '../hooks/useGlobalCaseSearch';
 import type { ChatContext } from '../types/chat';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,9 +39,7 @@ import {
   Book,
   XCircle,
   Send,
-  Search,
   Menu,
-  X,
   Shield,
   CheckCircle,
   FileText,
@@ -134,9 +134,6 @@ export const Dashboard = () => {
   const [constitutionText, setConstitutionText] = useState<string>('');
   const [criminalCodeText, setCriminalCodeText] = useState<string>('');
   const [loading, setLoading] = useState(false);
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Resizable code container state
   const [codeContainerHeight, setCodeContainerHeight] = useState<number>(() => {
@@ -337,16 +334,60 @@ export const Dashboard = () => {
     setMobileSheetOpen(false); // Close mobile sheet when case is selected
   };
 
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+  // Handler for search result selection - auto-expands sidebar to selected case
+  const handleSearchCaseSelect = (result: CaseSearchResult) => {
+    console.log('🔍 Search result selected:', result);
+
+    // Set the selected case ID
+    setSelectedCaseId(result.id);
+    setShowHints(false);
+    setShowSteps(false);
+    setMobileSheetOpen(false);
+
+    // Auto-expand sidebar to show the selected case
+    if (result.category && result.subcategory) {
+      // Determine which domain this belongs to
+      const categoryLower = result.category.toLowerCase();
+      let domainId: string | null = null;
+
+      if (categoryLower.includes('civil')) {
+        domainId = 'civil';
+      } else if (categoryLower.includes('penal')) {
+        domainId = 'penal';
+      } else if (categoryLower.includes('constitutional') || categoryLower.includes('constituțional')) {
+        domainId = 'constitutional';
+      }
+
+      if (domainId) {
+        // Expand the law domain
+        setExpandedCategory(domainId);
+
+        // Find the matching category within the domain
+        const domain = lawCategories.find(d => d.id === domainId);
+        if (domain) {
+          // Find category that contains this subcategory
+          const matchingCategory = domain.categories.find(cat =>
+            cat.subcategories.some(sub => sub === result.subcategory)
+          );
+
+          if (matchingCategory) {
+            // Expand the appropriate category state
+            if (domainId === 'civil') {
+              setExpandedCivilCategory(matchingCategory.id);
+            } else if (domainId === 'constitutional') {
+              setExpandedConstitutionalCategory(matchingCategory.id);
+            }
+
+            // Expand the subcategory
+            setExpandedSubcategory(result.subcategory);
+          }
+        }
+      }
+    }
   };
 
-  // Filter function for search - only filters cases by case_code and title
-  const matchesSearchCases = (caseItem: Case) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return caseItem.case_code.toLowerCase().includes(query) ||
-           caseItem.title.toLowerCase().includes(query);
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
   const getDifficultyBadge = (level: string) => {
@@ -436,25 +477,10 @@ Concluzia:
     <>
       {/* Global Search for Cases */}
       <div className="px-4 py-3 border-b border-border">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Caută caz după cod sau titlu..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-8"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              title="Șterge căutarea"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+        <CaseSearchAutocomplete
+          onSelectCase={handleSearchCaseSelect}
+          placeholder="Caută caz după cod sau titlu..."
+        />
       </div>
 
       <ScrollArea className="flex-1">
@@ -549,9 +575,7 @@ Concluzia:
                                     ) : cases.length === 0 ? (
                                       <li className="px-3 py-1.5 text-xs text-muted-foreground">Nu există cazuri</li>
                                     ) : (
-                                      cases
-                                        .filter(matchesSearchCases)
-                                        .map((caseItem) => (
+                                      cases.map((caseItem) => (
                                           <li key={caseItem.id}>
                                             <button
                                               className={`w-full flex items-center gap-1.5 px-2 py-1.5 text-xs rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 ${
